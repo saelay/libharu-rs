@@ -72,7 +72,7 @@ impl From<(Real, Real)> for Point {
 }
 
 
-/// Font object
+/// Font handle type.
 pub struct Font<'a> {
     font: libharu_sys::HPDF_Font,
     _doc: &'a Document,

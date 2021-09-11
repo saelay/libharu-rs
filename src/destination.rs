@@ -1,6 +1,6 @@
 use crate::page::Page;
 
-/// Destination object
+/// Destination handle type.
 pub struct Destination<'a, 'b> {
     dst: libharu_sys::HPDF_Destination,
     _page: &'a Page<'b>,

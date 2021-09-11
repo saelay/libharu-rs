@@ -58,7 +58,7 @@ pub enum TextRenderingMode {
     Clipping,
 }
 
-/// Page object.
+/// Page handle type.
 pub struct Page<'a> {
     page: libharu_sys::HPDF_Page,
     doc: &'a Document,

@@ -358,10 +358,10 @@ impl Document {
     }
 
     /// Enable traditional Chinese encodings. After the method is invoked, an application can use the following traditional Chinese encodings.
-    // * GB-EUC-H
-    // * GB-EUC-V
-    // * GBK-EUC-H
-    // * GBK-EUC-V
+    /// * GB-EUC-H
+    /// * GB-EUC-V
+    /// * GBK-EUC-H
+    /// * GBK-EUC-V
     pub fn use_cntencodings(&self) -> anyhow::Result<()> {
         let status = unsafe {
             libharu_sys::HPDF_UseCNTEncodings(self.handle())

@@ -1,7 +1,7 @@
 use crate::document::Document;
 use crate::destination::Destination;
 
-/// Outline object
+/// Outline handle type.
 pub struct Outline<'a> {
     outline: libharu_sys::HPDF_Outline,
     _doc: &'a Document,
