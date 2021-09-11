@@ -1,6 +1,6 @@
 use crate::document::Document;
 use crate::destination::Destination;
-use crate::{Real, Font, Color};
+use crate::{Real, Font, Color, Point};
 
 use std::ffi::CString;
 
@@ -276,33 +276,65 @@ impl<'a> Page<'a> {
     }
     
     /// Move the current text position to the start of the next line with using specified offset values.
-    pub fn move_text_pos(&self, xpos: Real, ypos: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_MoveTextPos(self.page, xpos, ypos);
+    pub fn move_text_pos<T>(&self, pos: T) -> anyhow::Result<()>
+    where
+        T: Into<Point>,
+    {
+        let pos = pos.into();
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_MoveTextPos(self.page, pos.x, pos.y)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_MoveTextPos failed (status={})", status);
         }
+
+        Ok(())
     }
     
     /// Get the current position for text showing.
-    pub fn current_text_pos(&self) -> anyhow::Result<(Real, Real)> {
+    pub fn current_text_pos(&self) -> anyhow::Result<Point> {
         let point = unsafe {
             libharu_sys::HPDF_Page_GetCurrentTextPos(self.handle())
         };
 
-        Ok((point.x, point.y))
+        Ok(Point{x:point.x, y:point.y})
     }
 
     /// Start a new subpath and move the current point for drawing path,
-    pub fn move_to(&self, xpos: Real, ypos: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_MoveTo(self.page, xpos, ypos);
+    pub fn move_to<T>(&self, pos: T) -> anyhow::Result<()>
+    where
+        T: Into<Point>,
+    {
+        let pos = pos.into();
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_MoveTo(self.page, pos.x, pos.y)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_MoveTo failed (status={})", status);
         }
+
+        Ok(())
     }
     
     /// Append a path from the current point to the specified point.
-    pub fn line_to(&self, xpos: Real, ypos: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_LineTo(self.page, xpos, ypos);
+    pub fn line_to<T>(&self,  pos: T) -> anyhow::Result<()>
+    where
+        T: Into<Point>,
+    {
+        let pos = pos.into();
+        let status = unsafe {
+            libharu_sys::HPDF_Page_LineTo(self.page, pos.x, pos.y)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_LineTo failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Set the line dash pattern in the page.
@@ -376,31 +408,83 @@ impl<'a> Page<'a> {
     }
 
     /// Set filling color.
-    pub fn set_rgb_fill(&self, r: Real, g: Real, b: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetRGBFill(self.page, r, g, b);
+    pub fn set_rgb_fill<T>(&self, color: T) -> anyhow::Result<()>
+    where
+        T: Into<Color>
+    {
+        let color = color.into();
+        
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetRGBFill(self.page, color.red, color.green, color.blue)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetRGBFill failed (status={})", status);
         }
+
+        Ok(())
     }
     
     /// Append a Bézier curve to the current path using three spesified points.
-    pub fn curve_to(&self, x1: Real, y1: Real, x2: Real, y2: Real, x3: Real, y3: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_CurveTo(self.page, x1, y1, x2, y2, x3, y3);
+    pub fn curve_to<T1, T2, T3>(&self, point1: T1, point2: T2, point3: T3) -> anyhow::Result<()>
+    where
+        T1: Into<Point>,
+        T2: Into<Point>,
+        T3: Into<Point>,
+    {
+        let point1 = point1.into();
+        let point2 = point2.into();
+        let point3 = point3.into();
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_CurveTo(self.page, point1.x, point1.y, point2.x, point2.y, point3.x, point3.y)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_CurveTo failed (status={})", status);
         }
+
+        Ok(())
     }
     
     /// Append a Bézier curve to the current path using two spesified points.
-    pub fn curve_to_2(&self, x2: Real, y2: Real, x3: Real, y3: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_CurveTo2(self.page, x2, y2, x3, y3);
+    pub fn curve_to_2<T1, T2>(&self, point2: T1, point3: T2) -> anyhow::Result<()>
+    where
+        T1: Into<Point>,
+        T2: Into<Point>,
+    {
+        let point2 = point2.into();
+        let point3 = point3.into();
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_CurveTo2(self.page, point2.x, point2.y, point3.x, point3.y)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_CurveTo2 failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Append a Bézier curve to the current path using two spesified points.
-    pub fn curve_to_3(&self, x1: Real, y1: Real, x3: Real, y3: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_CurveTo3(self.page, x1, y1, x3, y3);
+    pub fn curve_to_3<T1, T2>(&self, point1: T1, point3: T2) -> anyhow::Result<()>//x1: Real, y1: Real, x3: Real, y3: Real) {
+    where
+        T1: Into<Point>,
+        T2: Into<Point>,
+    {
+        let point1 = point1.into();
+        let point3 = point3.into();
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_CurveTo3(self.page, point1.x, point1.y, point3.x, point3.y)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_CurveTo3 failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Set text affine transformation matrix.

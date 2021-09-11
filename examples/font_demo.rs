@@ -1,6 +1,9 @@
+extern crate libharu;
+extern crate anyhow;
+
 use libharu::{Document};
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     // http://libharu.sourceforge.net/demo/font_demo.c
     let doc = Document::new(|err| {
         println!("err={:?}", err);
@@ -33,7 +36,7 @@ fn main() {
     page.end_text();
 
     page.begin_text();
-    page.move_text_pos(60.0, height - 105.0);
+    page.move_text_pos((60.0, height - 105.0))?;
 
     let font_list = [
         "Courier",
@@ -59,13 +62,15 @@ fn main() {
         /* print a label of text */
         page.set_font_and_size(&def_font, 9.0);
         page.show_text(font_name);
-        page.move_text_pos(0.0, -18.0);
+        page.move_text_pos((0.0, -18.0))?;
 
         /* print a sample text. */
         page.set_font_and_size(&font, 20.0);
         page.show_text(samp_text);
-        page.move_text_pos(0.0, -20.0);
+        page.move_text_pos((0.0, -20.0))?;
     }
     
     doc.save_to_file("font_demo.pdf");
+
+    Ok(())
 }

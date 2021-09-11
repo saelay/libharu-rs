@@ -33,6 +33,7 @@ pub use destination::{
 pub type Real = libharu_sys::HPDF_REAL;
 
 /// RGB color type.
+#[derive(Debug, Clone)]
 pub struct Color {
     /// red (0.0 ~ 1.0)
     pub red: Real,
@@ -43,6 +44,33 @@ pub struct Color {
     /// blue (0.0 ~ 1.0)
     pub blue: Real,
 }
+
+impl Copy for Color {}
+
+impl From<(Real, Real, Real)> for Color {
+    fn from(v: (Real, Real, Real)) -> Self {
+        Self { red: v.0, green: v.1, blue: v.2 }
+    }
+}
+
+/// Point
+#[derive(Debug, Clone)]
+pub struct Point {
+    /// x
+    pub x: Real,
+
+    /// y
+    pub y: Real,
+}
+
+impl Copy for Point {}
+
+impl From<(Real, Real)> for Point {
+    fn from(v: (Real, Real)) -> Self {
+        Self { x: v.0, y: v.1 }
+    }
+}
+
 
 /// Font object
 pub struct Font<'a> {

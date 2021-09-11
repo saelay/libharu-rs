@@ -11,6 +11,7 @@ use std::ffi::CString;
 use std::convert::TryInto;
 
 /// Page label style.
+#[derive(Debug)]
 pub enum PageNumStyle {
     /// Page label is displayed by Arabic numerals.
     Decimal,
@@ -49,6 +50,7 @@ bitflags! {
 }
 
 /// Page display style.
+#[derive(Debug)]
 pub enum PageMode {
     /// Display the document with neither outline nor thumbnail.
     None,
