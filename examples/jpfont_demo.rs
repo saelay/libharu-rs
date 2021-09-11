@@ -73,19 +73,19 @@ fn main() -> anyhow::Result<()> {
         let (jptext, _, _) = encoding_rs::SHIFT_JIS.encode(jptext);
 
         page.set_font_and_size(font, 10.0)?;
-        page.show_text_raw(&jptext)?;
+        page.show_text_bytes(&jptext)?;
         page.move_text_pos((0.0, -18.0))?;
 
         page.set_font_and_size(font, 16.0)?;
-        page.show_text_raw(&jptext)?;
+        page.show_text_bytes(&jptext)?;
         page.move_text_pos((0.0, -27.0))?;
 
         page.set_font_and_size(font, 23.0)?;
-        page.show_text_raw(&jptext)?;
+        page.show_text_bytes(&jptext)?;
         page.move_text_pos((0.0, -36.0))?;
 
         page.set_font_and_size(font, 30.0)?;
-        page.show_text_raw(&jptext)?;
+        page.show_text_bytes(&jptext)?;
 
         let pos = page.current_text_pos()?;
 

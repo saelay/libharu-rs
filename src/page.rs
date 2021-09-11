@@ -345,8 +345,8 @@ impl<'a> Page<'a> {
         Ok(())
     }
 
-    /// Print the text on the specified position. (raw data)
-    pub fn text_out_raw(&self, xpos: Real, ypos: Real, text: &[u8]) -> anyhow::Result<()> {
+    /// Print the text on the specified position. (bytes data)
+    pub fn text_out_bytes(&self, xpos: Real, ypos: Real, text: &[u8]) -> anyhow::Result<()> {
         let text = CString::new(text)?;
         let status = unsafe {
             libharu_sys::HPDF_Page_TextOut(self.handle(), xpos, ypos, std::mem::transmute(text.as_ptr()))
@@ -373,8 +373,8 @@ impl<'a> Page<'a> {
         Ok(())
     }
     
-    /// Print the text at the current position on the page. (raw data)
-    pub fn show_text_raw(&self, text: &[u8]) -> anyhow::Result<()> {
+    /// Print the text at the current position on the page. (bytes data)
+    pub fn show_text_bytes(&self, text: &[u8]) -> anyhow::Result<()> {
         let text = CString::new(text).unwrap();
         let status = unsafe {
             libharu_sys::HPDF_Page_ShowText(self.handle(), std::mem::transmute(text.as_ptr()))
@@ -401,8 +401,8 @@ impl<'a> Page<'a> {
         Ok(())
     }
     
-    /// Move the current text position to the start of the next line, (raw data)
-    pub fn show_text_next_line_raw(&self, text: &[u8]) -> anyhow::Result<()> {
+    /// Move the current text position to the start of the next line, (bytes data)
+    pub fn show_text_next_line_bytes(&self, text: &[u8]) -> anyhow::Result<()> {
         let text = CString::new(text)?;
         let status = unsafe {
             libharu_sys::HPDF_Page_ShowTextNextLine(self.handle(), std::mem::transmute(text.as_ptr()))
