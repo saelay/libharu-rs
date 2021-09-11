@@ -16,7 +16,7 @@ fn main() -> anyhow::Result<()> {
     
     /* Print the lines of the page. */
     page.set_line_width(1.0)?;
-    page.add_rectangle(50.0, 50.0, width - 100.0, height - 110.0)?;
+    page.rectangle(50.0, 50.0, width - 100.0, height - 110.0)?;
     page.stroke()?;
 
     /* Print the title of the page (with positioning center). */

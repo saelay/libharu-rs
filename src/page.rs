@@ -140,8 +140,8 @@ impl<'a> Page<'a> {
         Ok(())
     }
 
-    /// Appends a rectangle to the current path.
-    pub fn add_rectangle(&self, x: Real, y: Real, width: Real, height: Real) -> anyhow::Result<()> {
+    /// Append a rectangle to the current path.
+    pub fn rectangle(&self, x: Real, y: Real, width: Real, height: Real) -> anyhow::Result<()> {
         let status = unsafe {
             libharu_sys::HPDF_Page_Rectangle(self.handle(), x, y, width, height)
         };

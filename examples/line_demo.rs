@@ -40,7 +40,7 @@ fn draw_rect<T: Into<Point>>(page: &Page, pos: T, label: &str) -> anyhow::Result
     page.show_text(label)?;
     page.end_text()?;
 
-    page.add_rectangle(pos.x, pos.y - 40.0, 220.0, 25.0)?;
+    page.rectangle(pos.x, pos.y - 40.0, 220.0, 25.0)?;
 
     Ok(())
 }
@@ -58,7 +58,7 @@ fn main() -> anyhow::Result<()> {
 
     /* print the lines of the page */
     page.set_line_width(1.0)?;
-    page.add_rectangle(50.0, 50.0, page.width()? - 100.0, page.height()? - 110.0)?;
+    page.rectangle(50.0, 50.0, page.width()? - 100.0, page.height()? - 110.0)?;
     page.stroke()?;
 
     /* print the title of the page (with positioning center) */
