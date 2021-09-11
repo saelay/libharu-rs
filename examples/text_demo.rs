@@ -1,3 +1,4 @@
+extern crate libharu;
 use libharu::{Real, Document, Page, TextRenderingMode, CompressionMode};
 
 mod util;
@@ -30,7 +31,7 @@ fn show_description(page: &Page, x: Real, y: Real, text: &str) {
     page.set_rgb_fill(color.red, color.green, color.blue);
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     // http://libharu.sourceforge.net/demo/text_demo.c
     let samp_text = "abcdefgABCDEFG123!#$%&+-@?";
     let samp_text2 = "The quick brown fox jumps over the lazy dog.";
@@ -40,7 +41,7 @@ fn main() {
     }).unwrap();
 
     /* set compression mode */
-    doc.set_compression_mode(CompressionMode::ALL);
+    doc.set_compression_mode(CompressionMode::ALL)?;
 
     /* create default-font */
     let font = doc.font("Helvetica", None).unwrap();
@@ -244,4 +245,6 @@ fn main() {
 
     /* save the document to a file */
     doc.save_to_file("text_demo.pdf");
+
+    Ok(())
 }

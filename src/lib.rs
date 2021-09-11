@@ -3,12 +3,15 @@
 #![warn(missing_docs)]
 mod document;
 mod page;
+mod outline;
+mod destination;
 mod error;
 
 pub use document::{
     Document,
     PageNumStyle,
     CompressionMode,
+    PageMode,
 };
 
 pub use page::{
@@ -16,6 +19,14 @@ pub use page::{
     LineCap,
     LineJoin,
     TextRenderingMode,
+};
+
+pub use outline::{
+    Outline,
+};
+
+pub use destination::{
+    Destination,
 };
 
 /// Floating-point type used in libharu.
@@ -42,5 +53,20 @@ pub struct Font<'a> {
 impl<'a> Font<'a> {
     pub(crate) fn new(_doc: &'a Document, font: libharu_sys::HPDF_Font) -> Self {
         Self { font, _doc }
+    }
+
+    pub(crate) fn handle(&self) -> libharu_sys::HPDF_Font {
+        self.font
+    }
+
+    /// Get the name of the font.
+    pub fn name(&self) -> anyhow::Result<&str> {
+        unsafe {
+            let name = libharu_sys::HPDF_Font_GetFontName(self.handle());
+
+            let s = std::ffi::CStr::from_ptr(name).to_str()?;
+
+            Ok(s)
+        }
     }
 }

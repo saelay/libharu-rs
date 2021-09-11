@@ -2,6 +2,7 @@
 
 use crate::error::Error;
 use crate::page::Page;
+use crate::outline::Outline;
 use crate::Font;
 
 use bitflags::bitflags;
@@ -45,6 +46,21 @@ bitflags! {
         /// All stream datas are compressed. (The same as `CompressionMode::Text | CompressionMode::Image | CompressionMode::Metadata`)
         const ALL = Self::TEXT.bits | Self::IMAGE.bits | Self::METADATA.bits;
     }
+}
+
+/// Page display style.
+pub enum PageMode {
+    /// Display the document with neither outline nor thumbnail.
+    None,
+
+    /// Display the document with outline pain.
+    Outline,
+
+    /// Display the document with thumbnail pain.
+    Thumbs,
+    
+    /// Display the document with full screen mode.
+    FullScreen,
 }
 
 // onerrorのクロージャをBoxで持ちたいためInnerを別にしている。
@@ -103,6 +119,26 @@ impl Document {
         Ok(Page::new(self, page))
     }
 
+    /// Set how the document should be displayed.
+    pub fn set_page_mode(&self, mode: PageMode) -> anyhow::Result<()> {
+        let mode = match mode {
+            PageMode::None => libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_USE_NONE,
+            PageMode::Outline => libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_USE_OUTLINE,
+            PageMode::Thumbs => libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_USE_THUMBS,
+            PageMode::FullScreen => libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_FULL_SCREEN,
+        };
+
+        let status = unsafe {
+            libharu_sys::HPDF_SetPageMode(self.handle(), mode)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_SetPageMode failed (status={})", status);
+        }
+
+        Ok(())
+    }
+
     /// Create a new page and inserts it just before the specified page.
     pub fn insert_page(&self, target: &Page) -> anyhow::Result<Page> {
         let page = unsafe {
@@ -128,7 +164,7 @@ impl Document {
             libharu_sys::HPDF_GetFont(self.doc,
                 std::mem::transmute(font_name.as_ptr()),
                 match encoding_name {
-                    Some(s) => std::mem::transmute(s.as_ptr()),
+                    Some(ref s) => std::mem::transmute(s.as_ptr()),
                     None => std::ptr::null_mut(),
                 })
         };
@@ -169,19 +205,19 @@ impl Document {
     }
 
     /// Enable Japanese fonts. After the method invoked, an application can use the following Japanese fonts.
-    /// * MS-Mincyo
-    /// * MS-Mincyo,Bold
-    /// * MS-Mincyo,Bold
-    /// * MS-Mincyo,Italic
-    /// * MS-Mincyo,BoldItalic
+    /// * MS-mincho
+    /// * MS-mincho,Bold
+    /// * MS-mincho,Bold
+    /// * MS-mincho,Italic
+    /// * MS-mincho,BoldItalic
     /// * MS-Gothic
     /// * MS-Gothic,Bold
     /// * MS-Gothic,Italic
     /// * MS-Gothic,BoldItalic
-    /// * MS-PMincyo
-    /// * MS-PMincyo,Bold
-    /// * MS-PMincyo,Italic
-    /// * MS-PMincyo,BoldItalic
+    /// * MS-Pmincho
+    /// * MS-Pmincho,Bold
+    /// * MS-Pmincho,Italic
+    /// * MS-Pmincho,BoldItalic
     /// * MS-PGothic
     /// * MS-PGothic,Bold
     /// * MS-PGothic,Italic
@@ -264,7 +300,24 @@ impl Document {
 
         Ok(())
     }
+    
+    /// Enables Japanese encodings. After the method invoked, an application can use the following Japanese encodings.
+    /// * 90ms-RKSJ-H
+    /// * 90ms-RKSJ-V
+    /// * 90msp-RKSJ-H
+    /// * EUC-H
+    /// * EUC-V
+    pub fn use_jpencodings(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_UseJPEncodings(self.handle())
+        };
 
+        if status != 0 {
+            anyhow::bail!("HPDF_UseJPEncodings failed (status = {})", status);
+        }
+
+        Ok(())
+    }
     /// Save the current document to a file.
     pub fn save_to_file(&self, name: &str) {
         let name = CString::new(name).unwrap();
@@ -274,10 +327,42 @@ impl Document {
     }
 
     /// Set the mode of compression.
-    pub fn set_compression_mode(&self, mode: CompressionMode) {
-        unsafe {
-            libharu_sys::HPDF_SetCompressionMode(self.doc, mode.bits());
+    #[must_use]
+    pub fn set_compression_mode(&self, mode: CompressionMode) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_SetCompressionMode(self.handle(), mode.bits())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_SetCompressionMode failed (status = {})", status);
         }
+
+        Ok(())
+    }
+
+    /// creates root outline object.
+    /// TODO: support encoder...
+    #[must_use]
+    pub fn create_outline(&self, title: &str, parent: Option<&Outline>) -> anyhow::Result<Outline> {
+        let title = CString::new(title)?;
+        
+        let outline = unsafe {
+            libharu_sys::HPDF_CreateOutline(
+                self.handle(),
+                match parent {
+                    Some(p) => p.handle(),
+                    None => std::ptr::null_mut(),
+                },
+                title.as_ptr() as *const i8,
+                std::ptr::null_mut(),
+            )
+        };
+
+        if outline == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_CreateOutline failed");
+        }
+
+        Ok(Outline::new(self, outline))
     }
 }
 

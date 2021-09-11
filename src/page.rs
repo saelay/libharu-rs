@@ -1,4 +1,5 @@
 use crate::document::Document;
+use crate::destination::Destination;
 use crate::{Real, Font, Color};
 
 use std::ffi::CString;
@@ -78,10 +79,24 @@ impl<'a> Page<'a> {
         }
     }
 
+    /// Set height of page.
+    pub fn set_height(&self, val: Real) {
+        unsafe {
+            libharu_sys::HPDF_Page_SetHeight(self.handle(), val);
+        }
+    }
+
     /// Get width of page.
     pub fn width(&self) -> Real {
         unsafe {
             libharu_sys::HPDF_Page_GetWidth(self.page)
+        }
+    }
+
+    /// Set width of page.
+    pub fn set_width(&self, val: Real) {
+        unsafe {
+            libharu_sys::HPDF_Page_SetWidth(self.handle(), val);
         }
     }
 
@@ -217,21 +232,41 @@ impl<'a> Page<'a> {
     }
 
     /// Print the text on the specified position.
-    pub fn text_out(&self, xpos: Real, ypos: Real, text: &str) {
+    pub fn text_out(&self, xpos: Real, ypos: Real, text: &str)
+    {
         let text = CString::new(text).unwrap();
         unsafe {
             libharu_sys::HPDF_Page_TextOut(self.page, xpos, ypos, text.as_ptr() as *const i8);
         }
     }
-    
+
+    /// Print the text on the specified position. (raw data)
+    pub fn text_out_raw(&self, xpos: Real, ypos: Real, text: &[u8])
+    {
+        let text = CString::new(text).unwrap();
+        unsafe {
+            libharu_sys::HPDF_Page_TextOut(self.page, xpos, ypos, text.as_ptr() as *const i8);
+        }
+    }
+
     /// Print the text at the current position on the page.
-    pub fn show_text(&self, text: &str) {
+    pub fn show_text(&self, text: &str)
+    {
         let text = CString::new(text).unwrap();
         unsafe {
             libharu_sys::HPDF_Page_ShowText(self.page, text.as_ptr() as *const i8);
         }
     }
     
+    /// Print the text at the current position on the page. (raw data)
+    pub fn show_text_raw(&self, text: &[u8])
+    {
+        let text = CString::new(text).unwrap();
+        unsafe {
+            libharu_sys::HPDF_Page_ShowText(self.page, text.as_ptr() as *const i8);
+        }
+    }
+
     /// Move the current text position to the start of the next line,
     pub fn show_text_next_line(&self, text: &str) {
         let text = CString::new(text).unwrap();
@@ -245,6 +280,15 @@ impl<'a> Page<'a> {
         unsafe {
             libharu_sys::HPDF_Page_MoveTextPos(self.page, xpos, ypos);
         }
+    }
+    
+    /// Get the current position for text showing.
+    pub fn current_text_pos(&self) -> anyhow::Result<(Real, Real)> {
+        let point = unsafe {
+            libharu_sys::HPDF_Page_GetCurrentTextPos(self.handle())
+        };
+
+        Ok((point.x, point.y))
     }
 
     /// Start a new subpath and move the current point for drawing path,
@@ -396,5 +440,18 @@ impl<'a> Page<'a> {
         unsafe {
             libharu_sys::HPDF_Page_SetWordSpace(self.page, val);
         }
+    }
+
+    /// Create a new destination object for the page.
+    pub fn create_destination(&self) -> anyhow::Result<Destination> {
+        let dst = unsafe {
+            libharu_sys::HPDF_Page_CreateDestination(self.handle())
+        };
+
+        if dst == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_Page_CreateDestination failed");
+        }
+
+        Ok(Destination::new(self, dst))
     }
 }
