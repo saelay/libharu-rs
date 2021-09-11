@@ -12,6 +12,7 @@ impl<'a> Outline<'a> {
         Self { _doc, outline }
     }
 
+    #[inline]
     pub(crate) fn handle(&self) -> libharu_sys::HPDF_Outline {
         self.outline
     }

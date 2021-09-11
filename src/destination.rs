@@ -11,6 +11,7 @@ impl<'a, 'b> Destination<'a, 'b> {
         Self { dst, _page }
     }
     
+    #[inline]
     pub(crate) fn handle(&self) -> libharu_sys::HPDF_Destination {
         self.dst
     }

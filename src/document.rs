@@ -104,6 +104,7 @@ impl Document {
         Ok(Self { doc, inner })
     }
 
+    #[inline]
     pub(crate) fn handle(&self) -> libharu_sys::HPDF_Doc {
         self.doc
     }
@@ -163,7 +164,7 @@ impl Document {
         };
 
         let font = unsafe {
-            libharu_sys::HPDF_GetFont(self.doc,
+            libharu_sys::HPDF_GetFont(self.handle(),
                 std::mem::transmute(font_name.as_ptr()),
                 match encoding_name {
                     Some(ref s) => std::mem::transmute(s.as_ptr()),
@@ -196,7 +197,7 @@ impl Document {
             None => CString::new("")?,
         };
         let status = unsafe {
-            libharu_sys::HPDF_AddPageLabel(self.doc, page_num, style, first_page, std::mem::transmute(prefix.as_ptr()))
+            libharu_sys::HPDF_AddPageLabel(self.handle(), page_num, style, first_page, std::mem::transmute(prefix.as_ptr()))
         };
 
         if status != 0 {
@@ -226,7 +227,7 @@ impl Document {
     /// * MS-PGothic,BoldItalic
     pub fn use_jpfonts(&self) -> anyhow::Result<()> {
         let status = unsafe {
-            libharu_sys::HPDF_UseJPFonts(self.doc)
+            libharu_sys::HPDF_UseJPFonts(self.handle())
         };
 
         if status != 0 {
@@ -255,7 +256,7 @@ impl Document {
     /// * Batang,BoldItalic
     pub fn use_krfonts(&self) -> anyhow::Result<()> {
         let status = unsafe {
-            libharu_sys::HPDF_UseKRFonts(self.doc)
+            libharu_sys::HPDF_UseKRFonts(self.handle())
         };
 
         if status != 0 {
@@ -276,7 +277,7 @@ impl Document {
     /// * SimHei,BoldItalic
     pub fn use_cnsfonts(&self) -> anyhow::Result<()> {
         let status = unsafe {
-            libharu_sys::HPDF_UseCNSFonts(self.doc)
+            libharu_sys::HPDF_UseCNSFonts(self.handle())
         };
 
         if status != 0 {
@@ -293,7 +294,7 @@ impl Document {
     /// * MingLiU,BoldItalic
     pub fn use_cntfonts(&self) -> anyhow::Result<()> {
         let status = unsafe {
-            libharu_sys::HPDF_UseCNTFonts(self.doc)
+            libharu_sys::HPDF_UseCNTFonts(self.handle())
         };
 
         if status != 0 {
@@ -375,7 +376,7 @@ impl Document {
 impl Drop for Document {
     fn drop(&mut self) {
         unsafe {
-            libharu_sys::HPDF_Free(self.doc);
+            libharu_sys::HPDF_Free(self.handle());
         }
     }
 }

@@ -83,6 +83,7 @@ impl<'a> Font<'a> {
         Self { font, _doc }
     }
 
+    #[inline]
     pub(crate) fn handle(&self) -> libharu_sys::HPDF_Font {
         self.font
     }
