@@ -304,7 +304,7 @@ impl Document {
         Ok(())
     }
     
-    /// Enables Japanese encodings. After the method invoked, an application can use the following Japanese encodings.
+    /// Enable Japanese encodings. After the method invoked, an application can use the following Japanese encodings.
     /// * 90ms-RKSJ-H
     /// * 90ms-RKSJ-V
     /// * 90msp-RKSJ-H
@@ -321,6 +321,59 @@ impl Document {
 
         Ok(())
     }
+
+    /// Enable Korean encodings. After the method is invoked, an application can use the following Korean encodings.
+    /// * KSC-EUC-H
+    /// * KSC-EUC-V
+    /// * KSCms-UHC-H
+    /// * KSCms-UHC-HW-H
+    /// * KSCms-UHC-HW-V
+    pub fn use_krencodings(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_UseKREncodings(self.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_UseKREncodings failed (status = {})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Enable simplified Chinese encodings. After the method is invoked, an application can use the following simplified Chinese encodings.
+    /// * GB-EUC-H
+    /// * GB-EUC-V
+    /// * GBK-EUC-H
+    /// * GBK-EUC-V
+    pub fn use_cnsencodings(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_UseCNSEncodings(self.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_UseCNSEncodings failed (status = {})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Enable traditional Chinese encodings. After the method is invoked, an application can use the following traditional Chinese encodings.
+    // * GB-EUC-H
+    // * GB-EUC-V
+    // * GBK-EUC-H
+    // * GBK-EUC-V
+    pub fn use_cntencodings(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_UseCNTEncodings(self.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_UseCNTEncodings failed (status = {})", status);
+        }
+
+        Ok(())
+    }
+
     /// Save the current document to a file.
     pub fn save_to_file(&self, name: &str) -> anyhow::Result<()> {
         let name = CString::new(name).unwrap();
