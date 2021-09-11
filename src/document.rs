@@ -321,15 +321,20 @@ impl Document {
         Ok(())
     }
     /// Save the current document to a file.
-    pub fn save_to_file(&self, name: &str) {
+    pub fn save_to_file(&self, name: &str) -> anyhow::Result<()> {
         let name = CString::new(name).unwrap();
-        unsafe {
-            libharu_sys::HPDF_SaveToFile(self.doc, name.as_bytes().as_ptr() as *const i8);
+        let status = unsafe {
+            libharu_sys::HPDF_SaveToFile(self.handle(), std::mem::transmute(name.as_bytes().as_ptr()))
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_SaveToFile failed (status = {})", status);
         }
+
+        Ok(())
     }
 
     /// Set the mode of compression.
-    #[must_use]
     pub fn set_compression_mode(&self, mode: CompressionMode) -> anyhow::Result<()> {
         let status = unsafe {
             libharu_sys::HPDF_SetCompressionMode(self.handle(), mode.bits())
@@ -344,7 +349,6 @@ impl Document {
 
     /// creates root outline object.
     /// TODO: support encoder...
-    #[must_use]
     pub fn create_outline(&self, title: &str, parent: Option<&Outline>) -> anyhow::Result<Outline> {
         let title = CString::new(title)?;
         

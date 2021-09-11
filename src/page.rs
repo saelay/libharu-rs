@@ -5,6 +5,7 @@ use crate::{Real, Font, Color, Point};
 use std::ffi::CString;
 
 /// The style of line-cap.
+#[derive(Debug)]
 pub enum LineCap {
     /// The line is squared off at the endpoint of the path.
     Butt,
@@ -17,6 +18,7 @@ pub enum LineCap {
 }
 
 /// The style of line-join.
+#[derive(Debug)]
 pub enum LineJoin {
     /// HPDF_MITER_JOIN
     Miter,
@@ -29,6 +31,7 @@ pub enum LineJoin {
 }
 
 /// Text rendering mode
+#[derive(Debug)]
 pub enum TextRenderingMode {
     /// HPDF_FILL
     Fill,
@@ -73,31 +76,47 @@ impl<'a> Page<'a> {
     }
 
     /// Get height of page.
-    pub fn height(&self) -> Real {
-        unsafe {
-            libharu_sys::HPDF_Page_GetHeight(self.page)
-        }
+    pub fn height(&self) -> anyhow::Result<Real> {
+        let ret = unsafe {
+            libharu_sys::HPDF_Page_GetHeight(self.handle())
+        };
+
+        Ok(ret)
     }
 
     /// Set height of page.
-    pub fn set_height(&self, val: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetHeight(self.handle(), val);
+    pub fn set_height(&self, val: Real) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetHeight(self.handle(), val)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetHeight failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Get width of page.
-    pub fn width(&self) -> Real {
-        unsafe {
-            libharu_sys::HPDF_Page_GetWidth(self.page)
-        }
+    pub fn width(&self) -> anyhow::Result<Real> {
+        let ret = unsafe {
+            libharu_sys::HPDF_Page_GetWidth(self.handle())
+        };
+
+        Ok(ret)
     }
 
     /// Set width of page.
-    pub fn set_width(&self, val: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetWidth(self.handle(), val);
+    pub fn set_width(&self, val: Real) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetWidth(self.handle(), val)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetWidth failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Get line width of page.
@@ -108,102 +127,170 @@ impl<'a> Page<'a> {
     }
 
     /// Set line width of page.
-    pub fn set_line_width(&self, width: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetLineWidth(self.page, width);
+    pub fn set_line_width(&self, width: Real) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetLineWidth(self.page, width)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetLineWidth failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Appends a rectangle to the current path.
-    pub fn add_rectangle(&self, x: Real, y: Real, width: Real, height: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_Rectangle(self.page, x, y, width, height);
+    pub fn add_rectangle(&self, x: Real, y: Real, width: Real, height: Real) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_Rectangle(self.page, x, y, width, height)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetLineWidth failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Paint the current path.
-    pub fn stroke(&self) {
-        unsafe {
-            libharu_sys::HPDF_Page_Stroke(self.page);
+    pub fn stroke(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_Stroke(self.page)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_Stroke failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Fill the current path using the nonzero winding number rule.
-    pub fn fill(&self) {
-        unsafe {
-            libharu_sys::HPDF_Page_Fill(self.page);
+    pub fn fill(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_Fill(self.page)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_Fill failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Fill the current path using the nonzero winding number rule, then paint the current path.
-    pub fn fill_stroke(&self) {
-        unsafe {
-            libharu_sys::HPDF_Page_FillStroke(self.page);
+    pub fn fill_stroke(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_FillStroke(self.page)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_FillStroke failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Paint the current path and set clipping region.
-    pub fn clip(&self) {
-        unsafe {
-            libharu_sys::HPDF_Page_Clip(self.page);
+    pub fn clip(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_Clip(self.page)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_Clip failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Push the page's current graphics state to the stack.
-    pub fn gsave(&self) {
-        unsafe {
-            libharu_sys::HPDF_Page_GSave(self.page);
+    pub fn gsave(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_GSave(self.page)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_GSave failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Pop the graphics state from the stack.
-    pub fn grestore(&self) {
-        unsafe {
-            libharu_sys::HPDF_Page_GRestore(self.page);
+    pub fn grestore(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_GRestore(self.page)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_GRestore failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Gets the handle of the page's current font.
-    pub fn current_font(&self) -> Font {
+    pub fn current_font(&self) -> anyhow::Result<Font> {
         let font = unsafe {
             libharu_sys::HPDF_Page_GetCurrentFont(self.page)
         };
 
-        Font::new(self.doc, font)
+        if font == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_Page_GetCurrentFont failed");
+        }
+
+        Ok(Font::new(self.doc, font))
     }
 
     /// Gets the size of the page's current font.
-    pub fn current_font_size(&self) -> Real {
-        unsafe {
-            libharu_sys::HPDF_Page_GetCurrentFontSize(self.page)
-        }
+    pub fn current_font_size(&self) -> anyhow::Result<Real> {
+        let ret = unsafe {
+            libharu_sys::HPDF_Page_GetCurrentFontSize(self.handle())
+        };
+
+        Ok(ret)
     }
 
     /// Set font and size.
-    pub fn set_font_and_size(&self, font: &Font, size: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetFontAndSize(self.page, font.font, size);
+    pub fn set_font_and_size(&self, font: &Font, size: Real) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetFontAndSize(self.handle(), font.font, size)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetFontAndSize failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Set text leading
-    pub fn set_text_leading(&self, val: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetTextLeading(self.page, val);
+    pub fn set_text_leading(&self, val: Real) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetTextLeading(self.handle(), val)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetTextLeading failed (status={})", status);
         }
+
+        Ok(())
     }
     
     /// Get the width of the text in current fontsize, character spacing and word spacing.
-    pub fn text_width(&self, txt: &str) -> Real {
-        let txt = CString::new(txt).unwrap();
-        unsafe {
-            libharu_sys::HPDF_Page_TextWidth(self.page, txt.as_ptr() as *const i8)
-        }
+    pub fn text_width(&self, txt: &str) -> anyhow::Result<Real> {
+        let txt = CString::new(txt)?;
+        let ret = unsafe {
+            libharu_sys::HPDF_Page_TextWidth(self.handle(), std::mem::transmute(txt.as_ptr()))
+        };
+
+        Ok(ret)
     }
 
     /// Calculate the byte length which can be included within the specified width.
-    pub fn measure_text(&self, text: &str, width: Real, wordwrap: bool) -> (usize, Real) {
-        let text = CString::new(text).unwrap();
+    pub fn measure_text(&self, text: &str, width: Real, wordwrap: bool) -> anyhow::Result<(usize, Real)> {
+        let text = CString::new(text)?;
         let wordwrap = match wordwrap {
             true => 1,
             false => 0,
@@ -214,65 +301,117 @@ impl<'a> Page<'a> {
             libharu_sys::HPDF_Page_MeasureText(self.page, text.as_ptr() as *const i8, width, wordwrap, &mut real_width)
         };
 
-        (ret as usize, real_width)
+        Ok((ret as usize, real_width))
     }
 
     /// Begin a text object and sets the current text position to the point (0, 0).
-    pub fn begin_text(&self) {
-        unsafe {
-            libharu_sys::HPDF_Page_BeginText(self.page);
+    pub fn begin_text(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_BeginText(self.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_BeginText failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// End a text object.
-    pub fn end_text(&self) {
-        unsafe {
-            libharu_sys::HPDF_Page_EndText(self.page);
+    pub fn end_text(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_EndText(self.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_TextOut failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Print the text on the specified position.
-    pub fn text_out(&self, xpos: Real, ypos: Real, text: &str)
-    {
-        let text = CString::new(text).unwrap();
-        unsafe {
-            libharu_sys::HPDF_Page_TextOut(self.page, xpos, ypos, text.as_ptr() as *const i8);
+    pub fn text_out(&self, xpos: Real, ypos: Real, text: &str) -> anyhow::Result<()> {
+        let text = CString::new(text)?;
+        let status = unsafe {
+            libharu_sys::HPDF_Page_TextOut(self.handle(), xpos, ypos, std::mem::transmute(text.as_ptr()))
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_TextOut failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Print the text on the specified position. (raw data)
-    pub fn text_out_raw(&self, xpos: Real, ypos: Real, text: &[u8])
-    {
-        let text = CString::new(text).unwrap();
-        unsafe {
-            libharu_sys::HPDF_Page_TextOut(self.page, xpos, ypos, text.as_ptr() as *const i8);
+    pub fn text_out_raw(&self, xpos: Real, ypos: Real, text: &[u8]) -> anyhow::Result<()> {
+        let text = CString::new(text)?;
+        let status = unsafe {
+            libharu_sys::HPDF_Page_TextOut(self.handle(), xpos, ypos, std::mem::transmute(text.as_ptr()))
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_TextOut failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Print the text at the current position on the page.
-    pub fn show_text(&self, text: &str)
-    {
-        let text = CString::new(text).unwrap();
-        unsafe {
-            libharu_sys::HPDF_Page_ShowText(self.page, text.as_ptr() as *const i8);
+    pub fn show_text(&self, text: &str) -> anyhow::Result<()> {
+        let text = CString::new(text)?;
+        let status = unsafe {
+            libharu_sys::HPDF_Page_ShowText(self.handle(), std::mem::transmute(text.as_ptr()))
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_ShowText failed (status={})", status);
         }
+
+        Ok(())
     }
     
     /// Print the text at the current position on the page. (raw data)
-    pub fn show_text_raw(&self, text: &[u8])
-    {
+    pub fn show_text_raw(&self, text: &[u8]) -> anyhow::Result<()> {
         let text = CString::new(text).unwrap();
-        unsafe {
-            libharu_sys::HPDF_Page_ShowText(self.page, text.as_ptr() as *const i8);
+        let status = unsafe {
+            libharu_sys::HPDF_Page_ShowText(self.handle(), std::mem::transmute(text.as_ptr()))
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_ShowText failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Move the current text position to the start of the next line,
-    pub fn show_text_next_line(&self, text: &str) {
-        let text = CString::new(text).unwrap();
-        unsafe {
-            libharu_sys::HPDF_Page_ShowTextNextLine(self.page, text.as_ptr() as *const i8);
+    pub fn show_text_next_line(&self, text: &str) -> anyhow::Result<()> {
+        let text = CString::new(text)?;
+        let status = unsafe {
+            libharu_sys::HPDF_Page_ShowTextNextLine(self.handle(), std::mem::transmute(text.as_ptr()))
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_ShowTextNextLine failed (status={})", status);
         }
+
+        Ok(())
+    }
+    
+    /// Move the current text position to the start of the next line, (raw data)
+    pub fn show_text_next_line_raw(&self, text: &[u8]) -> anyhow::Result<()> {
+        let text = CString::new(text)?;
+        let status = unsafe {
+            libharu_sys::HPDF_Page_ShowTextNextLine(self.handle(), std::mem::transmute(text.as_ptr()))
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_ShowTextNextLine failed (status={})", status);
+        }
+
+        Ok(())
     }
     
     /// Move the current text position to the start of the next line with using specified offset values.
@@ -338,73 +477,120 @@ impl<'a> Page<'a> {
     }
 
     /// Set the line dash pattern in the page.
-    pub fn set_dash(&self, dash_mode: &[u16], phase: usize) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetDash(self.page, dash_mode.as_ptr(), dash_mode.len() as u32, phase as u32);
+    pub fn set_dash(&self, dash_mode: &[u16], phase: usize) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetDash(self.page, dash_mode.as_ptr(), dash_mode.len() as u32, phase as u32)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetDash failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Clear the line dash pattern in the page.
-    pub fn clear_dash(&self) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetDash(self.page, std::ptr::null_mut(), 0, 0);
+    pub fn clear_dash(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetDash(self.page, std::ptr::null_mut(), 0, 0)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetDash failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Set the stroking color.
-    pub fn set_rgb_stroke(&self, r: Real, g: Real, b: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetRGBStroke(self.page, r, g, b);
+    pub fn set_rgb_stroke<T>(&self, color: T) -> anyhow::Result<()>
+    where
+        T: Into<Color>
+    {
+        let color = color.into();
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetRGBStroke(self.page, color.red, color.green, color.blue)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetRGBStroke failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Set the filling color.
-    pub fn set_gray_fill(&self, gray: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetGrayFill(self.page, gray);
+    pub fn set_gray_fill(&self, gray: Real) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetGrayFill(self.page, gray)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetGrayFill failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Set the stroking color.
-    pub fn set_gray_stroke(&self, gray: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetGrayStroke(self.page, gray);
+    pub fn set_gray_stroke(&self, gray: Real) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetGrayStroke(self.page, gray)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetGrayStroke failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Set the shape to be used at the ends of line.
-    pub fn set_line_cap(&self, line_cap: LineCap) {
+    pub fn set_line_cap(&self, line_cap: LineCap) -> anyhow::Result<()> {
         let line_cap = match line_cap {
             LineCap::Butt => libharu_sys::HPDF_LineCap::HPDF_BUTT_END,
             LineCap::Round => libharu_sys::HPDF_LineCap::HPDF_ROUND_END,
             LineCap::ProjectingSquare => libharu_sys::HPDF_LineCap::HPDF_PROJECTING_SCUARE_END,
         };
 
-        unsafe {
-            libharu_sys::HPDF_Page_SetLineCap(self.page, line_cap);
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetLineCap(self.page, line_cap)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetLineCap failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Set the line join style in the page.
-    pub fn set_line_join(&self, line_join: LineJoin) {
+    pub fn set_line_join(&self, line_join: LineJoin) -> anyhow::Result<()> {
         let line_join = match line_join {
             LineJoin::Miter => libharu_sys::HPDF_LineJoin::HPDF_MITER_JOIN,
             LineJoin::Round => libharu_sys::HPDF_LineJoin::HPDF_ROUND_JOIN,
             LineJoin::Bevel => libharu_sys::HPDF_LineJoin::HPDF_BEVEL_JOIN,
         };
 
-        unsafe {
-            libharu_sys::HPDF_Page_SetLineJoin(self.page, line_join);
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetLineJoin(self.page, line_join)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetLineJoin failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Get current value of the page's filling color
-    pub fn rgb_fill(&self) -> Color {
+    pub fn rgb_fill(&self) -> anyhow::Result<Color> {
         let c = unsafe {
             libharu_sys::HPDF_Page_GetRGBFill(self.page)
         };
 
-        Color{ red: c.r, green: c.g, blue: c.b }
+        Ok(Color{ red: c.r, green: c.g, blue: c.b })
     }
 
     /// Set filling color.
@@ -468,7 +654,7 @@ impl<'a> Page<'a> {
     }
 
     /// Append a Bézier curve to the current path using two spesified points.
-    pub fn curve_to_3<T1, T2>(&self, point1: T1, point3: T2) -> anyhow::Result<()>//x1: Real, y1: Real, x3: Real, y3: Real) {
+    pub fn curve_to_3<T1, T2>(&self, point1: T1, point3: T2) -> anyhow::Result<()>
     where
         T1: Into<Point>,
         T2: Into<Point>,
@@ -488,14 +674,20 @@ impl<'a> Page<'a> {
     }
 
     /// Set text affine transformation matrix.
-    pub fn set_text_matrix(&self, a: Real, b: Real, c: Real, d: Real, x: Real, y: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetTextMatrix(self.page, a, b, c, d, x, y);
+    pub fn set_text_matrix(&self, a: Real, b: Real, c: Real, d: Real, x: Real, y: Real) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetTextMatrix(self.page, a, b, c, d, x, y)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetTextRenderingMode failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Sets the text rendering mode.
-    pub fn set_text_rendering_mode(&self, mode: TextRenderingMode) {
+    pub fn set_text_rendering_mode(&self, mode: TextRenderingMode) -> anyhow::Result<()> {
         let mode = match mode {
             TextRenderingMode::Fill => libharu_sys::HPDF_TextRenderingMode::HPDF_FILL,
             TextRenderingMode::Stroke => libharu_sys::HPDF_TextRenderingMode::HPDF_STROKE,
@@ -507,23 +699,41 @@ impl<'a> Page<'a> {
             TextRenderingMode::Clipping => libharu_sys::HPDF_TextRenderingMode::HPDF_CLIPPING,
         };
 
-        unsafe {
-            libharu_sys::HPDF_Page_SetTextRenderingMode(self.page, mode);
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetTextRenderingMode(self.page, mode)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetTextRenderingMode failed (status={})", status);
         }
+
+        Ok(())
     }
     
     /// Set the character spacing for text showing.
-    pub fn set_char_space(&self, val: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetCharSpace(self.page, val);
+    pub fn set_char_space(&self, val: Real) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetCharSpace(self.page, val)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetCharSpace failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Set the word spacing for text showing.
-    pub fn set_word_space(&self, val: Real) {
-        unsafe {
-            libharu_sys::HPDF_Page_SetWordSpace(self.page, val);
+    pub fn set_word_space(&self, val: Real) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetWordSpace(self.page, val)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetWordSpace failed (status={})", status);
         }
+
+        Ok(())
     }
 
     /// Create a new destination object for the page.

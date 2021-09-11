@@ -52,72 +52,72 @@ fn main() -> anyhow::Result<()> {
         outline.set_destination(&dst)?;
 
         let title_font = doc.font("Helvetica", None)?;
-        page.set_font_and_size(&title_font, 18.0);
+        page.set_font_and_size(&title_font, 18.0)?;
 
-        page.begin_text();
+        page.begin_text()?;
 
         /* move the position of the text to top of the page */
         page.move_text_pos((10.0, 190.0))?;
-        page.show_text(font.name()?);
+        page.show_text(font.name()?)?;
 
-        page.set_font_and_size(font, 15.0);
+        page.set_font_and_size(font, 15.0)?;
         page.move_text_pos((10.0, -20.0))?;
-        page.show_text("abcdefghijklmnopqrstuvwxyz");
+        page.show_text("abcdefghijklmnopqrstuvwxyz")?;
         page.move_text_pos((0.0, -20.0))?;
-        page.show_text("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        page.show_text("ABCDEFGHIJKLMNOPQRSTUVWXYZ")?;
         page.move_text_pos((0.0, -20.0))?;
-        page.show_text("1234567890");
+        page.show_text("1234567890")?;
         page.move_text_pos((0.0, -20.0))?;
 
         let jptext = "アメンボ赤いなあいうえお。浮き藻に小エビもおよいでる。";
         let (jptext, _, _) = encoding_rs::SHIFT_JIS.encode(jptext);
 
-        page.set_font_and_size(font, 10.0);
-        page.show_text_raw(&jptext);
+        page.set_font_and_size(font, 10.0)?;
+        page.show_text_raw(&jptext)?;
         page.move_text_pos((0.0, -18.0))?;
 
-        page.set_font_and_size(font, 16.0);
-        page.show_text_raw(&jptext);
+        page.set_font_and_size(font, 16.0)?;
+        page.show_text_raw(&jptext)?;
         page.move_text_pos((0.0, -27.0))?;
 
-        page.set_font_and_size(font, 23.0);
-        page.show_text_raw(&jptext);
+        page.set_font_and_size(font, 23.0)?;
+        page.show_text_raw(&jptext)?;
         page.move_text_pos((0.0, -36.0))?;
 
-        page.set_font_and_size(font, 30.0);
-        page.show_text_raw(&jptext);
+        page.set_font_and_size(font, 30.0)?;
+        page.show_text_raw(&jptext)?;
 
         let pos = page.current_text_pos()?;
 
         /* finish to print text */
-        page.end_text();
+        page.end_text()?;
 
         let mut x_pos = 20.0;
         for _ in 0..jptext.len()/2 {
             page.move_to((x_pos, pos.y - 10.0))?;
             page.line_to((x_pos, pos.y - 12.0))?;
-            page.stroke();
+            page.stroke()?;
             x_pos = x_pos + 30.0;
         }
 
         const PAGE_HEIGHT:libharu::Real = 210.0;
-        page.set_width(pos.x + 20.0);
-        page.set_height(PAGE_HEIGHT);
+        page.set_width(pos.x + 20.0)?;
+        page.set_height(PAGE_HEIGHT)?;
 
         page.move_to((10.0, PAGE_HEIGHT - 25.0))?;
         page.line_to((pos.x + 10.0, PAGE_HEIGHT - 25.0))?;
-        page.stroke();
+        page.stroke()?;
 
         page.move_to((10.0, PAGE_HEIGHT - 85.0))?;
         page.line_to((pos.x + 10.0, PAGE_HEIGHT - 85.0))?;
-        page.stroke();
+        page.stroke()?;
 
         page.move_to((10.0, pos.y - 12.0))?;
         page.line_to((pos.x + 10.0, pos.y - 12.0))?;
-        page.stroke();
+        page.stroke()?;
     }
 
-    doc.save_to_file("jpfont_demo.pdf");
+    doc.save_to_file("jpfont_demo.pdf")?;
 
     Ok(())
 }
