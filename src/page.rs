@@ -765,7 +765,8 @@ impl<'a> Page<'a> {
 
         Ok(Destination::new(self, dst))
     }
-
+    
+    /// Get the current position for path painting.
     pub fn current_pos(&self) -> anyhow::Result<Point> {
         let point = unsafe {
             libharu_sys::HPDF_Page_GetCurrentPos(self.handle())

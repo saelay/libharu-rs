@@ -143,6 +143,7 @@ impl Document {
         Ok(())
     }
 
+    /// Get how the document should be displayed.
     pub fn page_mode(&self) -> anyhow::Result<PageMode> {
         let mode = unsafe {
             libharu_sys::HPDF_GetPageMode(self.handle())
@@ -472,6 +473,7 @@ impl Document {
         Ok(Outline::new(self, outline))
     }
 
+    /// Get the handle of a corresponding encoder object by specified encoding name.
     pub fn find_encoder(&self, encoding_name: &str) -> anyhow::Result<Encoder> {
         let encoding_name = CString::new(encoding_name)?;
         let enc = unsafe {
@@ -485,6 +487,7 @@ impl Document {
         Ok(Encoder::new(self, enc))
     }
 
+    /// Get the handle of the current encoder of the document object.
     pub fn current_encoder(&self) -> anyhow::Result<Encoder> {
         let enc = unsafe {
             libharu_sys::HPDF_GetCurrentEncoder(self.handle())
@@ -497,6 +500,7 @@ impl Document {
         Ok(Encoder::new(self, enc))
     }
 
+    /// Set the handle of the current encoder of the document object.
     pub fn set_current_encoder(&self, encoding_name: &str) -> anyhow::Result<()> {
         let encoding_name = CString::new(encoding_name)?;
         let status = unsafe {
