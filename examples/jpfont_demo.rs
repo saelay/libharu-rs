@@ -39,7 +39,7 @@ fn main() -> anyhow::Result<()> {
     doc.set_page_mode(PageMode::Outline)?;
 
     /* create outline root. */
-    let root = doc.create_outline("JP font demo", None)?;
+    let root = doc.create_outline("JP font demo", None, None)?;
     root.set_opened(true)?;
 
     for font in &detail_font {
@@ -47,7 +47,7 @@ fn main() -> anyhow::Result<()> {
         let page = doc.add_page()?;
 
         /* create outline entry */
-        let outline = doc.create_outline(font.name()?, Some(&root))?;
+        let outline = doc.create_outline(font.name()?, Some(&root), None)?;
         let dst = page.create_destination()?;
         outline.set_destination(&dst)?;
 

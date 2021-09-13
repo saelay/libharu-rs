@@ -5,6 +5,7 @@ mod document;
 mod page;
 mod outline;
 mod destination;
+mod encoder;
 mod error;
 
 pub use document::{

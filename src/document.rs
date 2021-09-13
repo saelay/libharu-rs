@@ -4,6 +4,7 @@ use crate::error::Error;
 use crate::page::Page;
 use crate::outline::Outline;
 use crate::Font;
+use crate::encoder::Encoder;
 
 use bitflags::bitflags;
 
@@ -140,6 +141,24 @@ impl Document {
         }
 
         Ok(())
+    }
+
+    pub fn page_mode(&self) -> anyhow::Result<PageMode> {
+        let mode = unsafe {
+            libharu_sys::HPDF_GetPageMode(self.handle())
+        };
+
+        let mode = match mode {
+            libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_USE_NONE => PageMode::None,
+            libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_USE_OUTLINE => PageMode::Outline,
+            libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_USE_THUMBS => PageMode::Thumbs,
+            libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_FULL_SCREEN => PageMode::FullScreen,
+            _ => {
+                anyhow::bail!("HPDF_GetPageMode failed");
+            }
+        };
+
+        Ok(mode)
     }
 
     /// Create a new page and inserts it just before the specified page.
@@ -402,8 +421,7 @@ impl Document {
     }
 
     /// creates root outline object.
-    /// TODO: support encoder...
-    pub fn create_outline(&self, title: &str, parent: Option<&Outline>) -> anyhow::Result<Outline> {
+    pub fn create_outline(&self, title: &str, parent: Option<&Outline>, enc: Option<&Encoder>) -> anyhow::Result<Outline> {
         let title = CString::new(title)?;
         
         let outline = unsafe {
@@ -414,7 +432,10 @@ impl Document {
                     None => std::ptr::null_mut(),
                 },
                 title.as_ptr() as *const i8,
-                std::ptr::null_mut(),
+                match enc {
+                    Some(e) => e.handle(),
+                    None => std::ptr::null_mut(),
+                }
             )
         };
 
@@ -423,6 +444,70 @@ impl Document {
         }
 
         Ok(Outline::new(self, outline))
+    }
+
+    /// creates root outline object. (raw bytes)
+    pub fn create_outline_bytes(&self, title: &[u8], parent: Option<&Outline>, enc: Option<&Encoder>) -> anyhow::Result<Outline> {
+        let title = CString::new(title)?;
+        
+        let outline = unsafe {
+            libharu_sys::HPDF_CreateOutline(
+                self.handle(),
+                match parent {
+                    Some(p) => p.handle(),
+                    None => std::ptr::null_mut(),
+                },
+                title.as_ptr() as *const i8,
+                match enc {
+                    Some(e) => e.handle(),
+                    None => std::ptr::null_mut(),
+                }
+            )
+        };
+
+        if outline == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_CreateOutline failed");
+        }
+
+        Ok(Outline::new(self, outline))
+    }
+
+    pub fn find_encoder(&self, encoding_name: &str) -> anyhow::Result<Encoder> {
+        let encoding_name = CString::new(encoding_name)?;
+        let enc = unsafe {
+            libharu_sys::HPDF_GetEncoder(self.handle(), encoding_name.as_ptr())
+        };
+
+        if enc == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_GetEncoder failed");
+        }
+
+        Ok(Encoder::new(self, enc))
+    }
+
+    pub fn current_encoder(&self) -> anyhow::Result<Encoder> {
+        let enc = unsafe {
+            libharu_sys::HPDF_GetCurrentEncoder(self.handle())
+        };
+
+        if enc == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_GetCurrentEncoder failed");
+        }
+
+        Ok(Encoder::new(self, enc))
+    }
+
+    pub fn set_current_encoder(&self, encoding_name: &str) -> anyhow::Result<()> {
+        let encoding_name = CString::new(encoding_name)?;
+        let status = unsafe {
+            libharu_sys::HPDF_SetCurrentEncoder(self.handle(), encoding_name.as_ptr())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_SetCurrentEncoder failed (status={})", status);
+        }
+
+        Ok(())
     }
 }
 

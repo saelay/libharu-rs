@@ -305,6 +305,22 @@ impl<'a> Page<'a> {
         Ok((ret as usize, real_width))
     }
 
+    /// Calculate the byte length which can be included within the specified width. (bytes data)
+    pub fn measure_text_bytes(&self, text: &[u8], width: Real, wordwrap: bool) -> anyhow::Result<(usize, Real)> {
+        let text = CString::new(text)?;
+        let wordwrap = match wordwrap {
+            true => 1,
+            false => 0,
+        };
+
+        let mut real_width = 0.0;
+        let ret = unsafe {
+            libharu_sys::HPDF_Page_MeasureText(self.handle(), text.as_ptr() as *const i8, width, wordwrap, &mut real_width)
+        };
+
+        Ok((ret as usize, real_width))
+    }
+
     /// Begin a text object and sets the current text position to the point (0, 0).
     pub fn begin_text(&self) -> anyhow::Result<()> {
         let status = unsafe {
@@ -748,5 +764,13 @@ impl<'a> Page<'a> {
         }
 
         Ok(Destination::new(self, dst))
+    }
+
+    pub fn current_pos(&self) -> anyhow::Result<Point> {
+        let point = unsafe {
+            libharu_sys::HPDF_Page_GetCurrentPos(self.handle())
+        };
+
+        Ok(Point{ x: point.x, y: point.y })
     }
 }
