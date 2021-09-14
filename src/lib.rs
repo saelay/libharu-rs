@@ -20,6 +20,8 @@ pub use page::{
     LineCap,
     LineJoin,
     TextRenderingMode,
+    PageSize,
+    PageDirection,
 };
 
 pub use outline::{

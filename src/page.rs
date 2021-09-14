@@ -58,6 +58,56 @@ pub enum TextRenderingMode {
     Clipping,
 }
 
+/// Size of page.
+#[derive(Debug)]
+pub enum PageSize {
+    /// 8½ x 11 (Inches), 612 x 792 (pixel)
+    Letter,
+
+    /// 8 ½ x 14 (Inches), 612 x 1008 (pixel)
+    Legal,
+
+    /// 297 × 420 (mm), 841.89 x 1199.551 (pixel)
+    A3,
+
+    /// 210 × 297 (mm), 595.276 x 841.89 (pixel)
+    A4,
+
+    /// 148 × 210 (mm), 419.528 x 595.276 (pixel)
+    A5,
+
+    /// 250 × 353 (mm), 708.661 x 1000.63 (pixel)
+    B4,
+
+    /// 176 × 250 (mm), 498.898 x 708.661 (pixel)
+    B5,
+
+    /// 7½ x 10½ (Inches), 522 x 756 (pixel)
+    Executive,
+
+    /// 4 x 6 (Inches), 288 x 432 (pixel)
+    US4x6,
+
+    /// 4 x 8 (Inches), 288 x 576 (pixel)
+    US4x8,
+
+    /// 5 x 7 (Inches), 360 x 504 (pixel)
+    US5x7,
+
+    /// 4.125 x 9.5 (Inches), 297x 684 (pixel)
+    Comm10,
+}
+
+/// Direction of page.
+#[derive(Debug)]
+pub enum PageDirection {
+    /// longer value to horizontal
+    Portrait,
+
+    /// longer value to vertical
+    Landscape,
+}
+
 /// Page handle type.
 pub struct Page<'a> {
     page: libharu_sys::HPDF_Page,
@@ -773,5 +823,51 @@ impl<'a> Page<'a> {
         };
 
         Ok(Point{ x: point.x, y: point.y })
+    }
+
+    /// Set the size and direction of a page to a predefined size.
+    pub fn set_size(&self, size: PageSize, direction: PageDirection) -> anyhow::Result<()> {
+        let size = match size {
+            PageSize::Letter => libharu_sys::HPDF_PageSizes::HPDF_PAGE_SIZE_LETTER,
+            PageSize::Legal => libharu_sys::HPDF_PageSizes::HPDF_PAGE_SIZE_LEGAL,
+            PageSize::A3 => libharu_sys::HPDF_PageSizes::HPDF_PAGE_SIZE_A3,
+            PageSize::A4 => libharu_sys::HPDF_PageSizes::HPDF_PAGE_SIZE_A4,
+            PageSize::A5 => libharu_sys::HPDF_PageSizes::HPDF_PAGE_SIZE_A5,
+            PageSize::B4 => libharu_sys::HPDF_PageSizes::HPDF_PAGE_SIZE_B4,
+            PageSize::B5 => libharu_sys::HPDF_PageSizes::HPDF_PAGE_SIZE_B5,
+            PageSize::Executive => libharu_sys::HPDF_PageSizes::HPDF_PAGE_SIZE_EXECUTIVE,
+            PageSize::US4x6 => libharu_sys::HPDF_PageSizes::HPDF_PAGE_SIZE_US4x6,
+            PageSize::US4x8 => libharu_sys::HPDF_PageSizes::HPDF_PAGE_SIZE_US4x8,
+            PageSize::US5x7 => libharu_sys::HPDF_PageSizes::HPDF_PAGE_SIZE_US5x7,
+            PageSize::Comm10 => libharu_sys::HPDF_PageSizes::HPDF_PAGE_SIZE_COMM10,
+        };
+        
+        let direction = match direction {
+            PageDirection::Portrait => libharu_sys::HPDF_PageDirection::HPDF_PAGE_PORTRAIT,
+            PageDirection::Landscape => libharu_sys::HPDF_PageDirection::HPDF_PAGE_LANDSCAPE,
+        };
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetSize(self.handle(), size, direction)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetSize failed (status={})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Set rotation angle of the page.
+    pub fn set_rotate(&self, angle: u16) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetRotate(self.handle(), angle)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetRotate failed (status={})", status);
+        }
+
+        Ok(())
     }
 }
