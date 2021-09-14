@@ -66,6 +66,22 @@ pub enum PageMode {
     FullScreen,
 }
 
+
+/// Page layout style.
+#[derive(Debug)]
+pub enum PageLayout {
+    /// Only one page is displayed.
+    Single,
+    
+    /// Display the pages in one column.
+    OneColumn,
+    
+    /// Display the pages in two column. The page of the odd number is displayed left.
+    TwoColumnLeft,
+    
+    /// Display the pages in two column. The page of the odd number is displayed right.
+    TwoColumnRight,
+}
 // onerrorのクロージャをBoxで持ちたいためInnerを別にしている。
 // TODO: onerrorは必要か？
 struct DocumentInner {
@@ -512,6 +528,42 @@ impl Document {
         }
 
         Ok(())
+    }
+    
+    /// Get the current setting for page layout.
+    pub fn page_layout(&self) -> anyhow::Result<PageLayout> {
+        let layout = unsafe {
+            libharu_sys::HPDF_GetPageLayout(self.handle())
+        };
+
+        Ok(match layout {
+            libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_SINGLE => PageLayout::Single,
+            libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_ONE_COLUMN => PageLayout::OneColumn,
+            libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_TWO_COLUMN_LEFT => PageLayout::TwoColumnLeft,
+            libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_TWO_COLUMN_RIGHT  => PageLayout::TwoColumnRight,
+            _ => anyhow::bail!("HPDF_GetPageLayout failed"),
+        })
+    }
+
+    /// Set how the page should be displayed. If this attribute is not set, the setting of a viewer application is used.
+    pub fn set_page_layout(&self, layout: PageLayout) -> anyhow::Result<()> {
+        let layout = match layout {
+            PageLayout::Single => libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_SINGLE,
+            PageLayout::OneColumn => libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_ONE_COLUMN,
+            PageLayout::TwoColumnLeft => libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_TWO_COLUMN_LEFT,
+            PageLayout::TwoColumnRight  => libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_TWO_COLUMN_RIGHT,
+        };
+
+        let status = unsafe {
+            libharu_sys::HPDF_SetPageLayout(self.handle(), layout)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_SetPageLayout failed (status={})", status);
+        }
+
+        Ok(())
+
     }
 }
 
