@@ -1,7 +1,7 @@
 extern crate libharu;
 extern crate anyhow;
 
-use libharu::{Document, PageDescriptionMode, PageDescTextCommon};
+use libharu::prelude::*;//{Document, PageDescriptionMode, PageDescTextCommon};
 
 pub fn print_grid(doc: &Document, page: &PageDescriptionMode) -> anyhow::Result<()> {
     let height = page.height()?;

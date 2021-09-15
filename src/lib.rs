@@ -8,7 +8,8 @@ mod destination;
 mod encoder;
 mod error;
 mod context;
-
+pub mod prelude;
+/*
 pub use document::{
     Document,
     PageNumStyle,
@@ -41,7 +42,7 @@ pub use context::{
     PageDescTextCommon,
     PageDescPathCommon,
 };
-
+*/
 /// Floating-point type used in libharu.
 pub type Real = libharu_sys::HPDF_REAL;
 
@@ -120,11 +121,11 @@ impl From<(Real, Real, Real, Real)> for Rect {
 /// Font handle type.
 pub struct Font<'a> {
     font: libharu_sys::HPDF_Font,
-    _doc: &'a Document,
+    _doc: &'a prelude::Document,
 }
 
 impl<'a> Font<'a> {
-    pub(crate) fn new(_doc: &'a Document, font: libharu_sys::HPDF_Font) -> Self {
+    pub(crate) fn new(_doc: &'a prelude::Document, font: libharu_sys::HPDF_Font) -> Self {
         Self { font, _doc }
     }
 

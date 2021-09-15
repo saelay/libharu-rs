@@ -1,4 +1,4 @@
-use crate::{Page, Rect, Color, CmykColor, Real, Font, Point, LineCap, LineJoin, TextRenderingMode, TextAlignment};
+use crate::prelude::*;//{Page, Rect, Color, CmykColor, Real, Font, Point, LineCap, LineJoin, TextRenderingMode, TextAlignment};
 use std::ops::Deref;
 use std::ffi::CString;
 

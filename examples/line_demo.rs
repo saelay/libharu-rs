@@ -1,7 +1,7 @@
 extern crate libharu;
 extern crate anyhow;
 
-use libharu::{Point, Document, LineCap, LineJoin, PageDescriptionMode, PageDescTextCommon};
+use libharu::prelude::*;//{Point, Document, LineCap, LineJoin, PageDescriptionMode, PageDescTextCommon};
 
 fn draw_line<T: Into<Point>>(page: &PageDescriptionMode, pos: T, label: &str) -> anyhow::Result<()> {
     let pos = pos.into();

@@ -1,7 +1,7 @@
 extern crate libharu;
 extern crate encoding_rs;
 
-use libharu::{Document, PageMode, CompressionMode};
+use libharu::prelude::*;//{Document, PageMode, CompressionMode};
 
 fn main() -> anyhow::Result<()> {
     // http://libharu.sourceforge.net/demo/jpfont_demo.c
@@ -49,8 +49,8 @@ fn main() -> anyhow::Result<()> {
     for font in &detail_font {
         /* add a new page object */
         let page = doc.add_page()?;
-        let page = libharu::PageDescriptionMode::new(&page);
-        
+        let page = PageDescriptionMode::new(&page);
+
         /* create outline entry */
         let outline = doc.create_outline(font.name()?, Some(&root), None)?;
         let dst = page.create_destination()?;

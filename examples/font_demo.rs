@@ -1,7 +1,7 @@
 extern crate libharu;
 extern crate anyhow;
 
-use libharu::{Document};
+use libharu::prelude::*;//{Document};
 
 fn main() -> anyhow::Result<()> {
     // http://libharu.sourceforge.net/demo/font_demo.c
@@ -10,7 +10,7 @@ fn main() -> anyhow::Result<()> {
     }).unwrap();
 
     let page = doc.add_page()?;
-    let page = libharu::PageDescriptionMode::new(&page);
+    let page = PageDescriptionMode::new(&page);
 
     let height = page.height()?;
     let width = page.width()?;

@@ -1,7 +1,7 @@
 extern crate libharu;
 extern crate anyhow;
 
-use libharu::{Point, Real, Document, TextRenderingMode, CompressionMode, PageDescriptionMode, PageDescTextCommon};
+use libharu::prelude::*;//{Point, Real, Document, TextRenderingMode, CompressionMode, PageDescriptionMode, PageDescTextCommon};
 
 mod util;
 

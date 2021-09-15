@@ -1,6 +1,7 @@
-use crate::document::Document;
+use crate::prelude::*;
+//use crate::document::Document;
 use crate::destination::Destination;
-use crate::{Rect, Real, Font, Color, CmykColor, Point, PageDescriptionMode, PageTextMode, PagePathMode, PageDescTextCommon, PageDescPathCommon};
+//use crate::{Rect, Real, Font, Color, CmykColor, Point, PageDescriptionMode, PageTextMode, PagePathMode, PageDescTextCommon, PageDescPathCommon};
 
 use std::ffi::CString;
 
