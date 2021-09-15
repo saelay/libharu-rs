@@ -42,10 +42,15 @@ fn main() -> anyhow::Result<()> {
     let root = doc.create_outline("JP font demo", None, None)?;
     root.set_opened(true)?;
 
+    let jptext = "アメンボ赤いなあいうえお。浮き藻に小エビもおよいでる。";
+    let (jptext, _, _) = encoding_rs::SHIFT_JIS.encode(jptext);
+    let mut pos = (0.0, 0.0).into();
+
     for font in &detail_font {
         /* add a new page object */
         let page = doc.add_page()?;
-
+        let page = libharu::PageDescriptionMode::new(&page);
+        
         /* create outline entry */
         let outline = doc.create_outline(font.name()?, Some(&root), None)?;
         let dst = page.create_destination()?;
@@ -54,43 +59,39 @@ fn main() -> anyhow::Result<()> {
         let title_font = doc.font("Helvetica", None)?;
         page.set_font_and_size(&title_font, 18.0)?;
 
-        page.begin_text()?;
-
-        /* move the position of the text to top of the page */
-        page.move_text_pos((10.0, 190.0))?;
-        page.show_text(font.name()?)?;
-
-        page.set_font_and_size(font, 15.0)?;
-        page.move_text_pos((10.0, -20.0))?;
-        page.show_text("abcdefghijklmnopqrstuvwxyz")?;
-        page.move_text_pos((0.0, -20.0))?;
-        page.show_text("ABCDEFGHIJKLMNOPQRSTUVWXYZ")?;
-        page.move_text_pos((0.0, -20.0))?;
-        page.show_text("1234567890")?;
-        page.move_text_pos((0.0, -20.0))?;
-
-        let jptext = "アメンボ赤いなあいうえお。浮き藻に小エビもおよいでる。";
-        let (jptext, _, _) = encoding_rs::SHIFT_JIS.encode(jptext);
-
-        page.set_font_and_size(font, 10.0)?;
-        page.show_text_bytes(&jptext)?;
-        page.move_text_pos((0.0, -18.0))?;
-
-        page.set_font_and_size(font, 16.0)?;
-        page.show_text_bytes(&jptext)?;
-        page.move_text_pos((0.0, -27.0))?;
-
-        page.set_font_and_size(font, 23.0)?;
-        page.show_text_bytes(&jptext)?;
-        page.move_text_pos((0.0, -36.0))?;
-
-        page.set_font_and_size(font, 30.0)?;
-        page.show_text_bytes(&jptext)?;
-
-        let pos = page.current_text_pos()?;
-
-        /* finish to print text */
-        page.end_text()?;
+        page.run_text_mode(|page|{
+            /* move the position of the text to top of the page */
+            page.move_text_pos((10.0, 190.0))?;
+            page.show_text(font.name()?)?;
+    
+            page.set_font_and_size(font, 15.0)?;
+            page.move_text_pos((10.0, -20.0))?;
+            page.show_text("abcdefghijklmnopqrstuvwxyz")?;
+            page.move_text_pos((0.0, -20.0))?;
+            page.show_text("ABCDEFGHIJKLMNOPQRSTUVWXYZ")?;
+            page.move_text_pos((0.0, -20.0))?;
+            page.show_text("1234567890")?;
+            page.move_text_pos((0.0, -20.0))?;
+    
+    
+            page.set_font_and_size(font, 10.0)?;
+            page.show_text_bytes(&jptext)?;
+            page.move_text_pos((0.0, -18.0))?;
+    
+            page.set_font_and_size(font, 16.0)?;
+            page.show_text_bytes(&jptext)?;
+            page.move_text_pos((0.0, -27.0))?;
+    
+            page.set_font_and_size(font, 23.0)?;
+            page.show_text_bytes(&jptext)?;
+            page.move_text_pos((0.0, -36.0))?;
+    
+            page.set_font_and_size(font, 30.0)?;
+            page.show_text_bytes(&jptext)?;
+    
+            pos = page.current_text_pos()?;
+            Ok(())
+        })?;
 
         let mut x_pos = 20.0;
         for _ in 0..jptext.len()/2 {

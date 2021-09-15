@@ -7,6 +7,7 @@ mod outline;
 mod destination;
 mod encoder;
 mod error;
+mod context;
 
 pub use document::{
     Document,
@@ -22,6 +23,7 @@ pub use page::{
     TextRenderingMode,
     PageSize,
     PageDirection,
+    TextAlignment,
 };
 
 pub use outline::{
@@ -30,6 +32,14 @@ pub use outline::{
 
 pub use destination::{
     Destination,
+};
+
+pub use context::{
+    PageTextMode,
+    PagePathMode,
+    PageDescriptionMode,
+    PageDescTextCommon,
+    PageDescPathCommon,
 };
 
 /// Floating-point type used in libharu.
@@ -56,6 +66,22 @@ impl From<(Real, Real, Real)> for Color {
     }
 }
 
+/// CMYK color type
+#[derive(Debug, Clone)]
+pub struct CmykColor {
+    pub cyan: Real,
+    pub magenta: Real,
+    pub yellow: Real,
+    pub keyplate: Real,
+}
+
+impl Copy for CmykColor {}
+
+impl From<(Real, Real, Real, Real)> for CmykColor {
+    fn from(v: (Real, Real, Real, Real)) -> Self {
+        Self { cyan: v.0, magenta: v.1, yellow: v.2, keyplate: v.3 }
+    }
+}
 /// Point
 #[derive(Debug, Clone)]
 pub struct Point {
@@ -74,6 +100,22 @@ impl From<(Real, Real)> for Point {
     }
 }
 
+/// Rect
+#[derive(Debug, Clone)]
+pub struct Rect {
+    pub left: Real,
+    pub top: Real,
+    pub right: Real,
+    pub bottom: Real,
+}
+
+impl Copy for Rect {}
+
+impl From<(Real, Real, Real, Real)> for Rect {
+    fn from(v: (Real, Real, Real, Real)) -> Self {
+        Self { left: v.0, top: v.1, right: v.2, bottom: v.3 }
+    }
+}
 
 /// Font handle type.
 pub struct Font<'a> {
