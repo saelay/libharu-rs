@@ -28,8 +28,8 @@ pub use crate::context::{
     PageTextMode,
     PagePathMode,
     PageDescriptionMode,
-    PageDescTextCommon,
-    PageDescPathCommon,
+    PageDescTeextCommonFunction,
+    PageDescPathCommonFunction,
 };
 
 pub use crate::{

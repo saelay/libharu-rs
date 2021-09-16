@@ -2,60 +2,55 @@ use crate::prelude::*;//{Page, Rect, Color, CmykColor, Real, Font, Point, LineCa
 use std::ops::Deref;
 use std::ffi::CString;
 
-pub struct PageDescTextCommon<'doc, 'page> {
-    page: &'page Page<'doc>,
-}
 
-impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
-    pub(crate) fn new(page: &'page Page<'doc>) -> Self {
-        Self { page }
+pub trait PageDescTeextCommonFunction<'doc> : Deref<Target=Page<'doc>> {
+    fn handle(&self) -> &Page;
+    
+    fn set_line_width(&self, width: Real) -> anyhow::Result<()> {
+        self.handle().set_line_width(width)
     }
 
-    pub fn set_line_width(&self, width: Real) -> anyhow::Result<()> {
-        self.page.set_line_width(width)
+    fn set_line_cap(&self, line_cap: LineCap) -> anyhow::Result<()> {
+        self.handle().set_line_cap(line_cap)
     }
 
-    pub fn set_line_cap(&self, line_cap: LineCap) -> anyhow::Result<()> {
-        self.page.set_line_cap(line_cap)
+    fn set_line_join(&self, line_join: LineJoin) -> anyhow::Result<()> {
+        self.handle().set_line_join(line_join)
     }
 
-    pub fn set_line_join(&self, line_join: LineJoin) -> anyhow::Result<()> {
-        self.page.set_line_join(line_join)
+    fn set_dash(&self, dash_mode: &[u16], phase: usize) -> anyhow::Result<()> {
+        self.handle().set_dash(dash_mode, phase)
     }
 
-    pub fn set_dash(&self, dash_mode: &[u16], phase: usize) -> anyhow::Result<()> {
-        self.page.set_dash(dash_mode, phase)
+    fn set_char_space(&self, value: Real) -> anyhow::Result<()> {
+        self.handle().set_char_space(value)
     }
 
-    pub fn set_char_space(&self, value: Real) -> anyhow::Result<()> {
-        self.page.set_char_space(value)
+    fn set_word_space(&self, value: Real) -> anyhow::Result<()> {
+        self.handle().set_word_space(value)
     }
 
-    pub fn set_word_space(&self, value: Real) -> anyhow::Result<()> {
-        self.page.set_word_space(value)
+    fn set_horizontal_scalling(&self, value: Real) -> anyhow::Result<()> {
+        self.handle().set_horizontal_scalling(value)
     }
 
-    pub fn set_horizontal_scalling(&self, value: Real) -> anyhow::Result<()> {
-        self.page.set_horizontal_scalling(value)
+    fn set_text_leading(&self, value: Real) -> anyhow::Result<()> {
+        self.handle().set_text_leading(value)
     }
 
-    pub fn set_text_leading(&self, value: Real) -> anyhow::Result<()> {
-        self.page.set_text_leading(value)
+    fn set_font_and_size(&self, font: &Font, size: Real) -> anyhow::Result<()> {
+        self.handle().set_font_and_size(font, size)
     }
 
-    pub fn set_font_and_size(&self, font: &Font, size: Real) -> anyhow::Result<()> {
-        self.page.set_font_and_size(font, size)
-    }
-
-    pub fn set_text_rendering_mode(&self, mode: TextRenderingMode) -> anyhow::Result<()> {
-        self.page.set_text_rendering_mode(mode)
+    fn set_text_rendering_mode(&self, mode: TextRenderingMode) -> anyhow::Result<()> {
+        self.handle().set_text_rendering_mode(mode)
     }
 
     /// Print the text at the current position on the page.
-    pub fn show_text(&self, text: &str) -> anyhow::Result<()> {
+    fn show_text(&self, text: &str) -> anyhow::Result<()> {
         let text = CString::new(text)?;
         let status = unsafe {
-            libharu_sys::HPDF_Page_ShowText(self.page.handle(), std::mem::transmute(text.as_ptr()))
+            libharu_sys::HPDF_Page_ShowText(self.handle().handle(), std::mem::transmute(text.as_ptr()))
         };
 
         if status != 0 {
@@ -66,10 +61,10 @@ impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
     }
 
     /// Print the text at the current position on the page. (bytes data)
-    pub fn show_text_bytes(&self, text: &[u8]) -> anyhow::Result<()> {
+    fn show_text_bytes(&self, text: &[u8]) -> anyhow::Result<()> {
         let text = CString::new(text).unwrap();
         let status = unsafe {
-            libharu_sys::HPDF_Page_ShowText(self.page.handle(), std::mem::transmute(text.as_ptr()))
+            libharu_sys::HPDF_Page_ShowText(self.handle().handle(), std::mem::transmute(text.as_ptr()))
         };
 
         if status != 0 {
@@ -80,10 +75,10 @@ impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
     }
 
     /// Move the current text position to the start of the next line,
-    pub fn show_text_next_line(&self, text: &str) -> anyhow::Result<()> {
+    fn show_text_next_line(&self, text: &str) -> anyhow::Result<()> {
         let text = CString::new(text)?;
         let status = unsafe {
-            libharu_sys::HPDF_Page_ShowTextNextLine(self.page.handle(), std::mem::transmute(text.as_ptr()))
+            libharu_sys::HPDF_Page_ShowTextNextLine(self.handle().handle(), std::mem::transmute(text.as_ptr()))
         };
 
         if status != 0 {
@@ -94,10 +89,10 @@ impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
     }
 
     /// Move the current text position to the start of the next line, (bytes data)
-    pub fn show_text_next_line_bytes(&self, text: &[u8]) -> anyhow::Result<()> {
+    fn show_text_next_line_bytes(&self, text: &[u8]) -> anyhow::Result<()> {
         let text = CString::new(text)?;
         let status = unsafe {
-            libharu_sys::HPDF_Page_ShowTextNextLine(self.page.handle(), std::mem::transmute(text.as_ptr()))
+            libharu_sys::HPDF_Page_ShowTextNextLine(self.handle().handle(), std::mem::transmute(text.as_ptr()))
         };
 
         if status != 0 {
@@ -109,10 +104,10 @@ impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
 
     /// Moves the current text position to the start of the next line, then sets the word spacing,
     /// character spacing and prints the text at the current position on the page.
-    pub fn show_text_next_line_ex(&self, word_space: Real, char_space: Real, text: &str) -> anyhow::Result<()> {
+    fn show_text_next_line_ex(&self, word_space: Real, char_space: Real, text: &str) -> anyhow::Result<()> {
         let text = CString::new(text)?;
         let status = unsafe {
-            libharu_sys::HPDF_Page_ShowTextNextLineEx(self.page.handle(), word_space, char_space, std::mem::transmute(text.as_ptr()))
+            libharu_sys::HPDF_Page_ShowTextNextLineEx(self.handle().handle(), word_space, char_space, std::mem::transmute(text.as_ptr()))
         };
 
         if status != 0 {
@@ -124,10 +119,10 @@ impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
 
     /// Moves the current text position to the start of the next line, then sets the word spacing,
     /// character spacing and prints the text at the current position on the page. (bytes data)
-    pub fn show_text_next_line_ex_bytes(&self, word_space: Real, char_space: Real, text: &[u8]) -> anyhow::Result<()> {
+    fn show_text_next_line_ex_bytes(&self, word_space: Real, char_space: Real, text: &[u8]) -> anyhow::Result<()> {
         let text = CString::new(text)?;
         let status = unsafe {
-            libharu_sys::HPDF_Page_ShowTextNextLineEx(self.page.handle(), word_space, char_space, std::mem::transmute(text.as_ptr()))
+            libharu_sys::HPDF_Page_ShowTextNextLineEx(self.handle().handle(), word_space, char_space, std::mem::transmute(text.as_ptr()))
         };
 
         if status != 0 {
@@ -138,9 +133,9 @@ impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
     }
 
     /// Set the filling color.
-    pub fn set_gray_fill(&self, gray: Real) -> anyhow::Result<()> {
+    fn set_gray_fill(&self, gray: Real) -> anyhow::Result<()> {
         let status = unsafe {
-            libharu_sys::HPDF_Page_SetGrayFill(self.page.handle(), gray)
+            libharu_sys::HPDF_Page_SetGrayFill(self.handle().handle(), gray)
         };
 
         if status != 0 {
@@ -151,9 +146,9 @@ impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
     }
 
     /// Set the stroking color.
-    pub fn set_gray_stroke(&self, gray: Real) -> anyhow::Result<()> {
+    fn set_gray_stroke(&self, gray: Real) -> anyhow::Result<()> {
         let status = unsafe {
-            libharu_sys::HPDF_Page_SetGrayStroke(self.page.handle(), gray)
+            libharu_sys::HPDF_Page_SetGrayStroke(self.handle().handle(), gray)
         };
 
         if status != 0 {
@@ -164,14 +159,14 @@ impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
     }
 
     /// Set filling color.
-    pub fn set_rgb_fill<T>(&self, color: T) -> anyhow::Result<()>
+    fn set_rgb_fill<T>(&self, color: T) -> anyhow::Result<()>
     where
         T: Into<Color>
     {
         let color = color.into();
         
         let status = unsafe {
-            libharu_sys::HPDF_Page_SetRGBFill(self.page.handle(), color.red, color.green, color.blue)
+            libharu_sys::HPDF_Page_SetRGBFill(self.handle().handle(), color.red, color.green, color.blue)
         };
 
         if status != 0 {
@@ -182,14 +177,14 @@ impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
     }
 
     /// Set the stroking color.
-    pub fn set_rgb_stroke<T>(&self, color: T) -> anyhow::Result<()>
+    fn set_rgb_stroke<T>(&self, color: T) -> anyhow::Result<()>
     where
         T: Into<Color>
     {
         let color = color.into();
 
         let status = unsafe {
-            libharu_sys::HPDF_Page_SetRGBStroke(self.page.handle(), color.red, color.green, color.blue)
+            libharu_sys::HPDF_Page_SetRGBStroke(self.handle().handle(), color.red, color.green, color.blue)
         };
 
         if status != 0 {
@@ -200,14 +195,14 @@ impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
     }
 
     /// Set the filling color.
-    pub fn set_cmyk_fill<T>(&self, color: T) -> anyhow::Result<()>
+    fn set_cmyk_fill<T>(&self, color: T) -> anyhow::Result<()>
     where
         T: Into<CmykColor>
     {
         let color = color.into();
         
         let status = unsafe {
-            libharu_sys::HPDF_Page_SetCMYKFill(self.page.handle(), color.cyan, color.magenta, color.yellow, color.keyplate)
+            libharu_sys::HPDF_Page_SetCMYKFill(self.handle().handle(), color.cyan, color.magenta, color.yellow, color.keyplate)
         };
 
         if status != 0 {
@@ -218,14 +213,14 @@ impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
     }
 
     /// Set the stroking color.
-    pub fn set_cmyk_stroke<T>(&self, color: T) -> anyhow::Result<()>
+    fn set_cmyk_stroke<T>(&self, color: T) -> anyhow::Result<()>
     where
         T: Into<CmykColor>
     {
         let color = color.into();
         
         let status = unsafe {
-            libharu_sys::HPDF_Page_SetCMYKStroke(self.page.handle(), color.cyan, color.magenta, color.yellow, color.keyplate)
+            libharu_sys::HPDF_Page_SetCMYKStroke(self.handle().handle(), color.cyan, color.magenta, color.yellow, color.keyplate)
         };
 
         if status != 0 {
@@ -236,52 +231,28 @@ impl<'doc, 'page> PageDescTextCommon<'doc, 'page> {
     }
 }
 
-impl<'doc, 'page> Deref for PageDescTextCommon<'doc, 'page> {
-    type Target = Page<'doc>;
-    fn deref(&self) -> &Self::Target {
-        self.page
-    }
-}
 
 //------------------------------------------------------------------------------
 
-
-pub struct PageDescPathCommon<'doc, 'page> {
-    page: &'page Page<'doc>,
+pub trait PageDescPathCommonFunction<'doc> : Deref<Target=Page<'doc>> {
+    fn handle(&self) -> &Page;
 }
 
-impl<'doc, 'page> PageDescPathCommon<'doc, 'page> {
-    pub(crate) fn new(page: &'page Page<'doc>) -> Self {
-        Self { page }
-    }
-
-}
-
-impl<'doc, 'page> Deref for PageDescPathCommon<'doc, 'page> {
-    type Target = Page<'doc>;
-    fn deref(&self) -> &Self::Target {
-        self.page
-    }
-}
 
 //--------------------------------------------------------------------------
 pub struct PageDescriptionMode<'doc, 'page> {
-    page_dt: PageDescTextCommon<'doc, 'page>,
-    page_dp: PageDescPathCommon<'doc, 'page>,
+    page: &'page Page<'doc>,
 }
 
 impl<'doc, 'page> PageDescriptionMode<'doc, 'page> {
 
     pub fn new(page: &'page Page<'doc>) -> Self {
-        Self {
-            page_dt: PageDescTextCommon::new(page),
-            page_dp: PageDescPathCommon::new(page),
-        }
+        Self { page }
     }
 
     fn begin_text(&self) -> anyhow::Result<()> {
         let status = unsafe {
-            libharu_sys::HPDF_Page_BeginText(self.page_dt.handle())
+            libharu_sys::HPDF_Page_BeginText(self.page.handle())
         };
 
         if status != 0 {
@@ -293,7 +264,7 @@ impl<'doc, 'page> PageDescriptionMode<'doc, 'page> {
 
     pub(crate) fn end_text(&self) -> anyhow::Result<()> {
         let status = unsafe {
-            libharu_sys::HPDF_Page_EndText(self.page_dt.handle())
+            libharu_sys::HPDF_Page_EndText(self.page.handle())
         };
 
         if status != 0 {
@@ -308,7 +279,7 @@ impl<'doc, 'page> PageDescriptionMode<'doc, 'page> {
         F: FnOnce(PageTextMode) -> anyhow::Result<()>
     {
         self.begin_text()?;
-        let page = PageTextMode::new(&self.page_dt);
+        let page = PageTextMode::new(&self.page);
         let ret = f(page);
         self.end_text()?;
 
@@ -327,30 +298,30 @@ impl<'doc, 'page> PageDescriptionMode<'doc, 'page> {
 impl<'doc, 'page> Deref for PageDescriptionMode<'doc, 'page> {
     type Target = Page<'doc>;
     fn deref(&self) -> &Self::Target {
-        // page_dtもpage_dpも差しているPageは同じなのでどちらでもいいがpage_dtを使っている
-        self.page_dt.deref()
+        self.page
     }
 }
 
-impl<'doc, 'page> AsRef<PageDescTextCommon<'doc, 'page>> for PageDescriptionMode<'doc, 'page> {
-    fn as_ref(&self) -> &PageDescTextCommon<'doc, 'page> {
-        &self.page_dt
+impl<'doc, 'page> PageDescTeextCommonFunction<'doc> for PageDescriptionMode<'doc, 'page> {
+    fn handle(&self) -> &Page {
+        &self.page
     }
 }
 
-impl<'doc, 'page> AsRef<PageDescPathCommon<'doc, 'page>> for PageDescriptionMode<'doc, 'page> {
-    fn as_ref(&self) -> &PageDescPathCommon<'doc, 'page> {
-        &self.page_dp
+impl<'doc, 'page> PageDescPathCommonFunction<'doc> for PageDescriptionMode<'doc, 'page> {
+    fn handle(&self) -> &Page {
+        &self.page
     }
 }
+
 //--------------------------------------------------------------------------------------
 
-pub struct PageTextMode<'doc, 'page, 'c> {
-    page: &'c PageDescTextCommon<'doc, 'page>,
+pub struct PageTextMode<'doc, 'page> {
+    page: &'page Page<'doc>,
 }
 
-impl<'doc, 'page, 'c> PageTextMode<'doc, 'page, 'c> {
-    pub(crate) fn new(page: &'c PageDescTextCommon<'doc, 'page>) -> Self {
+impl<'doc, 'page> PageTextMode<'doc, 'page> {
+    pub(crate) fn new(page: &'page Page<'doc>) -> Self {
         Self { page }
     }
     
@@ -503,22 +474,29 @@ impl<'doc, 'page, 'c> PageTextMode<'doc, 'page, 'c> {
     }
 }
 
-impl<'doc, 'page, 'c> Deref for PageTextMode<'doc, 'page, 'c> {
-    type Target = PageDescTextCommon<'doc, 'page>;
+impl<'doc, 'page> Deref for PageTextMode<'doc, 'page> {
+    type Target = Page<'doc>;
     fn deref(&self) -> &Self::Target {
         self.page
     }
 }
 
 
-//-------------------------------------------------------------------------------------------
-
-pub struct PagePathMode<'doc, 'page, 'c> {
-    page: &'c PageDescPathCommon<'doc, 'page>,
+impl<'doc, 'page> PageDescTeextCommonFunction<'doc> for PageTextMode<'doc, 'page> {
+    fn handle(&self) -> &Page {
+        &self.page
+    }
 }
 
-impl<'doc, 'page, 'c> PagePathMode<'doc, 'page, 'c> {
-    pub(crate) fn new(page: &'c PageDescPathCommon<'doc, 'page>) -> Self {
+
+//-------------------------------------------------------------------------------------------
+
+pub struct PagePathMode<'doc, 'page> {
+    page: &'page Page<'doc>,
+}
+
+impl<'doc, 'page> PagePathMode<'doc, 'page> {
+    pub(crate) fn new(page: &'page Page<'doc>) -> Self {
         Self { page }
     }
     
@@ -592,9 +570,15 @@ impl<'doc, 'page, 'c> PagePathMode<'doc, 'page, 'c> {
 
 }
 
-impl<'doc, 'page, 'c> Deref for PagePathMode<'doc, 'page, 'c> {
-    type Target = PageDescPathCommon<'doc, 'page>;
+impl<'doc, 'page> Deref for PagePathMode<'doc, 'page> {
+    type Target = Page<'doc>;
     fn deref(&self) -> &Self::Target {
+        self.page
+    }
+}
+
+impl<'doc, 'page> PageDescPathCommonFunction<'doc> for PagePathMode<'doc, 'page> {
+    fn handle(&self) -> &Page {
         self.page
     }
 }

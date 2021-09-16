@@ -10,7 +10,7 @@ fn show_stripe_pattern<T:Into<Point>>(page: &PageDescriptionMode, p: T) -> anyho
 
     let mut iy = 0.0;
     while iy < 50.0 {
-        AsRef::<PageDescTextCommon>::as_ref(page).set_rgb_stroke((0.0, 0.0, 0.5))?;
+        page.set_rgb_stroke((0.0, 0.0, 0.5))?;
         page.set_line_width(1.0)?;
         page.move_to((p.x, p.y + iy))?;
         page.line_to((p.x + page.text_width("ABCabc123")?, p.y + iy))?;
@@ -35,7 +35,7 @@ fn show_description(page: &PageDescriptionMode, x: Real, y: Real, text: &str) ->
     })?;
 
     page.set_font_and_size(&font, fsize)?;
-    AsRef::<PageDescTextCommon>::as_ref(page).set_rgb_fill(color)?;
+    page.set_rgb_fill(color)?;
 
     Ok(())
 }
@@ -139,7 +139,7 @@ fn main() -> anyhow::Result<()> {
 
     /* Font rendering mode */
     page.set_font_and_size(&font, 32.0)?;
-    AsRef::<PageDescTextCommon>::as_ref(&page).set_rgb_fill((0.5, 0.5, 0.0))?;
+    page.set_rgb_fill((0.5, 0.5, 0.0))?;
     page.set_line_width(1.5)?;
 
     /* PDF_FILL */
@@ -201,7 +201,7 @@ fn main() -> anyhow::Result<()> {
 
     /* Reset text attributes */
     page.set_text_rendering_mode(TextRenderingMode::Fill)?;
-    AsRef::<PageDescTextCommon>::as_ref(&page).set_rgb_fill((0.0, 0.0, 0.0))?;
+    page.set_rgb_fill((0.0, 0.0, 0.0))?;
     page.set_font_and_size(&font, 30.0)?;
 
     /* Rotating text */

@@ -100,7 +100,7 @@ fn main() -> anyhow::Result<()> {
     page.clear_dash()?;
 
     page.set_line_width(30.0)?;
-    AsRef::<PageDescTextCommon>::as_ref(&page).set_rgb_stroke((0.0, 0.5, 0.0))?;
+    page.set_rgb_stroke((0.0, 0.5, 0.0))?;
 
     /* Line Cap Style */
     page.set_line_cap(LineCap::Butt)?;
@@ -113,7 +113,7 @@ fn main() -> anyhow::Result<()> {
 
     /* Line Join Style */
     page.set_line_width(30.0)?;
-    AsRef::<PageDescTextCommon>::as_ref(&page).set_rgb_stroke((0.0, 0.0, 0.5))?;
+    page.set_rgb_stroke((0.0, 0.0, 0.5))?;
 
     page.set_line_join(LineJoin::Miter)?;
     page.move_to((120.0, 300.0))?;
@@ -153,8 +153,8 @@ fn main() -> anyhow::Result<()> {
 
     /* Draw Rectangle */
     page.set_line_width(2.0)?;
-    AsRef::<PageDescTextCommon>::as_ref(&page).set_rgb_stroke((0.0, 0.0, 0.0))?;
-    AsRef::<PageDescTextCommon>::as_ref(&page).set_rgb_fill((0.75, 0.0, 0.0))?;
+    page.set_rgb_stroke((0.0, 0.0, 0.0))?;
+    page.set_rgb_fill((0.75, 0.0, 0.0))?;
 
     draw_rect(&page, (300.0, 770.0), "Stroke")?;
     page.stroke()?;
@@ -193,7 +193,7 @@ fn main() -> anyhow::Result<()> {
     let x3 = 480.0;
     let y3 = 90.0;
 
-    AsRef::<PageDescTextCommon>::as_ref(&page).set_rgb_fill((0.0, 0.0, 0.0))?;
+    page.set_rgb_fill((0.0, 0.0, 0.0))?;
 
     page.run_text_mode(|page|{
         page.move_text_pos((300.0, 540.0))?;

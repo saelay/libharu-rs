@@ -9,8 +9,8 @@ pub fn print_grid(doc: &Document, page: &PageDescriptionMode) -> anyhow::Result<
     let font = doc.font("Helvetica", None)?;
 
     page.set_font_and_size(&font, 5.0)?;
-    AsRef::<PageDescTextCommon>::as_ref(page).set_gray_fill(0.5)?;
-    AsRef::<PageDescTextCommon>::as_ref(page).set_gray_stroke(0.8)?;
+    page.set_gray_fill(0.5)?;
+    page.set_gray_stroke(0.8)?;
 
     /* draw horizontal lines */
     let mut y = 0.0;
@@ -29,13 +29,13 @@ pub fn print_grid(doc: &Document, page: &PageDescriptionMode) -> anyhow::Result<
         page.stroke()?;
 
         if ((y as u32) % 10 == 0) && (y > 0.0) {
-            AsRef::<PageDescTextCommon>::as_ref(page).set_gray_stroke(0.5)?;
+            page.set_gray_stroke(0.5)?;
 
             page.move_to((0.0, y))?;
             page.line_to((5.0, y))?;
             page.stroke()?;
 
-            AsRef::<PageDescTextCommon>::as_ref(page).set_gray_stroke(0.8)?;
+            page.set_gray_stroke(0.8)?;
         }
         y = y + 5.0;
     }
@@ -57,7 +57,7 @@ pub fn print_grid(doc: &Document, page: &PageDescriptionMode) -> anyhow::Result<
         page.stroke()?;
 
         if ((x as u32) == 0) && (x > 0.0) {
-            AsRef::<PageDescTextCommon>::as_ref(page).set_gray_stroke(0.5)?;
+            page.set_gray_stroke(0.5)?;
 
             page.move_to((x, 0.0))?;
             page.line_to((x, 5.0))?;
@@ -67,7 +67,7 @@ pub fn print_grid(doc: &Document, page: &PageDescriptionMode) -> anyhow::Result<
             page.line_to((x, height - 5.0))?;
             page.stroke()?;
 
-            AsRef::<PageDescTextCommon>::as_ref(page).set_gray_stroke(0.8)?;
+            page.set_gray_stroke(0.8)?;
         }
 
         x = x + 5.0;
@@ -109,8 +109,8 @@ pub fn print_grid(doc: &Document, page: &PageDescriptionMode) -> anyhow::Result<
         x = x + 5.0;
     }
 
-    AsRef::<PageDescTextCommon>::as_ref(page).set_gray_fill(0.0)?;
-    AsRef::<PageDescTextCommon>::as_ref(page).set_gray_stroke(0.0)?;
+    page.set_gray_fill(0.0)?;
+    page.set_gray_stroke(0.0)?;
 
     Ok(())
 }
