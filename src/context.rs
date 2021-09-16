@@ -3,7 +3,9 @@ use std::ops::Deref;
 use std::ffi::CString;
 
 
+/// Page functions in Description mode or Text mode. 
 pub trait PageDescTeextCommonFunction<'doc> : Deref<Target=Page<'doc>> {
+    /// Get Page
     fn handle(&self) -> &Page;
     
     /// Set line width of page.
@@ -95,7 +97,8 @@ pub trait PageDescTeextCommonFunction<'doc> : Deref<Target=Page<'doc>> {
 
         Ok(())
     }
-
+    
+    /// Set the horizontal scalling for text showing.
     fn set_horizontal_scalling(&self, value: Real) -> anyhow::Result<()> {
         let status = unsafe {
             libharu_sys::HPDF_Page_SetHorizontalScalling(self.handle().handle(), value)
@@ -345,19 +348,21 @@ pub trait PageDescTeextCommonFunction<'doc> : Deref<Target=Page<'doc>> {
 
 
 //------------------------------------------------------------------------------
-
+/// Page functions in Description mode or Path mode.
 pub trait PageDescPathCommonFunction<'doc> : Deref<Target=Page<'doc>> {
+    /// Get Page
     fn handle(&self) -> &Page;
 }
 
 
 //--------------------------------------------------------------------------
+/// Page object in Description mode.
 pub struct PageDescriptionMode<'doc, 'page> {
     page: &'page Page<'doc>,
 }
 
 impl<'doc, 'page> PageDescriptionMode<'doc, 'page> {
-
+    /// Create new PageDescriptionMode instance.
     pub fn new(page: &'page Page<'doc>) -> Self {
         Self { page }
     }
@@ -386,6 +391,7 @@ impl<'doc, 'page> PageDescriptionMode<'doc, 'page> {
         Ok(())
     }
 
+    /// Enter text mode.
     pub fn run_text_mode<F>(&self, f: F) -> anyhow::Result<()>
     where
         F: FnOnce(&PageTextMode) -> anyhow::Result<()>
@@ -397,7 +403,7 @@ impl<'doc, 'page> PageDescriptionMode<'doc, 'page> {
 
         ret
     }
-
+/*
     fn end_path(&self) -> anyhow::Result<()> {
         let status = unsafe {
             libharu_sys::HPDF_Page_EndPath(self.page.handle())
@@ -408,7 +414,8 @@ impl<'doc, 'page> PageDescriptionMode<'doc, 'page> {
         }
         Ok(())
     }
-
+*/
+    /// Enter path mode.
     pub fn run_path_mode<F>(&self, f: F) -> anyhow::Result<()>
     where
         F: FnOnce(&PagePathMode) -> anyhow::Result<()>
@@ -446,6 +453,7 @@ impl<'doc, 'page> PageDescPathCommonFunction<'doc> for PageDescriptionMode<'doc,
 
 //--------------------------------------------------------------------------------------
 
+/// Page object in text mode.
 pub struct PageTextMode<'doc, 'page> {
     page: &'page Page<'doc>,
 }
@@ -621,6 +629,7 @@ impl<'doc, 'page> PageDescTeextCommonFunction<'doc> for PageTextMode<'doc, 'page
 
 //-------------------------------------------------------------------------------------------
 
+/// Page object in Path mode.
 pub struct PagePathMode<'doc, 'page> {
     page: &'page Page<'doc>,
 }

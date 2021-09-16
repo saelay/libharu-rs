@@ -106,11 +106,19 @@ pub enum PageDirection {
     Landscape,
 }
 
+/// Text alignment.
 #[derive(Debug)]
 pub enum TextAlignment {
+    /// Left alignment
     Left,
+
+    /// Right alignment
     Right,
+
+    /// Center alignment
     Center,
+
+    /// Justify alignment
     Justify,
 }
 

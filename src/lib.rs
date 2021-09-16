@@ -8,6 +8,7 @@ mod destination;
 mod encoder;
 mod error;
 mod context;
+/// prelude
 pub mod prelude;
 
 /// Floating-point type used in libharu.
@@ -37,9 +38,16 @@ impl From<(Real, Real, Real)> for Color {
 /// CMYK color type
 #[derive(Debug, Clone)]
 pub struct CmykColor {
+    /// cyan (0.0 ~ 1.0)
     pub cyan: Real,
+
+    /// magenta (0.0 ~ 1.0)
     pub magenta: Real,
+    
+    /// yellow (0.0 ~ 1.0)
     pub yellow: Real,
+    
+    /// keyplate (0.0 ~ 1.0)
     pub keyplate: Real,
 }
 
@@ -71,9 +79,16 @@ impl From<(Real, Real)> for Point {
 /// Rect
 #[derive(Debug, Clone)]
 pub struct Rect {
+    /// Left position
     pub left: Real,
+
+    /// Top position
     pub top: Real,
+    
+    /// Right position
     pub right: Real,
+
+    /// Bottom position
     pub bottom: Real,
 }
 
