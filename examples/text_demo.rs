@@ -1,7 +1,7 @@
 extern crate libharu;
 extern crate anyhow;
 
-use libharu::prelude::*;//{Point, Real, Document, TextRenderingMode, CompressionMode, PageDescriptionMode, PageDescTextCommon};
+use libharu::prelude::*;
 
 mod util;
 
@@ -12,9 +12,12 @@ fn show_stripe_pattern<T:Into<Point>>(page: &PageDescriptionMode, p: T) -> anyho
     while iy < 50.0 {
         page.set_rgb_stroke((0.0, 0.0, 0.5))?;
         page.set_line_width(1.0)?;
-        page.move_to((p.x, p.y + iy))?;
-        page.line_to((p.x + page.text_width("ABCabc123")?, p.y + iy))?;
-        page.stroke()?;
+        page.run_path_mode(|page|{
+            page.move_to((p.x, p.y + iy))?;
+            page.line_to((p.x + page.text_width("ABCabc123")?, p.y + iy))?;
+            page.stroke()?;
+            Ok(())
+        })?;
         iy = iy + 3.0;
     }
 

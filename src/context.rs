@@ -398,12 +398,30 @@ impl<'doc, 'page> PageDescriptionMode<'doc, 'page> {
         ret
     }
 
+    fn end_path(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_EndPath(self.page.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_EndPath failed (status={})", status);
+        }
+        Ok(())
+    }
+
     pub fn run_path_mode<F>(&self, f: F) -> anyhow::Result<()>
     where
         F: FnOnce(&PagePathMode) -> anyhow::Result<()>
     {
-        // TODO: implement
-        Ok(())
+        let page = PagePathMode::new(&self.page);
+        let ret = f(&page);
+
+        // f()内のstroke(), fill()などの呼び出しでDESCRIPTIONモードに戻る。
+        // 呼び忘れた場合にここでDESCRIPTIONモードに戻したいがうまくいかない。
+        // end_pathだとすでにDESCRIPTIONモードだったときにGStateが壊れる。
+        //let _ = self.end_path();
+
+        ret
     }
 }
 
@@ -612,6 +630,7 @@ impl<'doc, 'page> PagePathMode<'doc, 'page> {
         Self { page }
     }
     
+    /// Start a new subpath and move the current point for drawing path,
     pub fn move_to<T>(&self, pos: T) -> anyhow::Result<()>
     where
         T: Into<Point>
@@ -629,6 +648,86 @@ impl<'doc, 'page> PagePathMode<'doc, 'page> {
         Ok(())
     }
 
+    /// Append a Bézier curve to the current path using three spesified points.
+    pub fn curve_to<T1, T2, T3>(&self, point1: T1, point2: T2, point3: T3) -> anyhow::Result<()>
+    where
+        T1: Into<Point>,
+        T2: Into<Point>,
+        T3: Into<Point>,
+    {
+        let point1 = point1.into();
+        let point2 = point2.into();
+        let point3 = point3.into();
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_CurveTo(self.page.handle(), point1.x, point1.y, point2.x, point2.y, point3.x, point3.y)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_CurveTo failed (status={})", status);
+        }
+
+        Ok(())
+    }
+    
+    /// Append a Bézier curve to the current path using two spesified points.
+    pub fn curve_to_2<T1, T2>(&self, point2: T1, point3: T2) -> anyhow::Result<()>
+    where
+        T1: Into<Point>,
+        T2: Into<Point>,
+    {
+        let point2 = point2.into();
+        let point3 = point3.into();
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_CurveTo2(self.page.handle(), point2.x, point2.y, point3.x, point3.y)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_CurveTo2 failed (status={})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Append a Bézier curve to the current path using two spesified points.
+    pub fn curve_to_3<T1, T2>(&self, point1: T1, point3: T2) -> anyhow::Result<()>
+    where
+        T1: Into<Point>,
+        T2: Into<Point>,
+    {
+        let point1 = point1.into();
+        let point3 = point3.into();
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_CurveTo3(self.page.handle(), point1.x, point1.y, point3.x, point3.y)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_CurveTo3 failed (status={})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Append a path from the current point to the specified point.
+    pub fn line_to<T>(&self,  pos: T) -> anyhow::Result<()>
+    where
+        T: Into<Point>,
+    {
+        let pos = pos.into();
+        let status = unsafe {
+            libharu_sys::HPDF_Page_LineTo(self.page.handle(), pos.x, pos.y)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_LineTo failed (status={})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Append a rectangle to the current path.
     pub fn rectangle<T>(&self, pos: T, width: Real, height: Real) -> anyhow::Result<()>
     where
         T: Into<Point>
@@ -646,6 +745,7 @@ impl<'doc, 'page> PagePathMode<'doc, 'page> {
         Ok(())
     }
 
+    /// Append a circle to the current path.
     pub fn circle<T>(&self, pos: T, ray: Real) -> anyhow::Result<()>
     where
         T: Into<Point>
@@ -663,6 +763,7 @@ impl<'doc, 'page> PagePathMode<'doc, 'page> {
         Ok(())
     }
 
+    /// Append a arc to the current path.
     pub fn arc<T>(&self, pos: T, ray: Real, ang1: Real, ang2: Real) -> anyhow::Result<()>
     where
         T: Into<Point>
@@ -679,6 +780,59 @@ impl<'doc, 'page> PagePathMode<'doc, 'page> {
 
         Ok(())
     }
+
+    /// Paint the current path.
+    pub fn stroke(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_Stroke(self.page.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_Stroke failed (status={})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Fill the current path using the nonzero winding number rule.
+    pub fn fill(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_Fill(self.page.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_Fill failed (status={})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Fill the current path using the nonzero winding number rule, then paint the current path.
+    pub fn fill_stroke(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_FillStroke(self.page.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_FillStroke failed (status={})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Paint the current path and set clipping region.
+    pub fn clip(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_Page_Clip(self.page.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_Clip failed (status={})", status);
+        }
+
+        Ok(())
+    }
+
 
 }
 

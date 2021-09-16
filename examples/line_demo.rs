@@ -12,9 +12,12 @@ fn draw_line<T: Into<Point>>(page: &PageDescriptionMode, pos: T, label: &str) ->
         Ok(())
     })?;
 
-    page.move_to((pos.x, pos.y - 15.0))?;
-    page.line_to((pos.x + 220.0, pos.y - 15.0))?;
-    page.stroke()?;
+    page.run_path_mode(|page|{
+        page.move_to((pos.x, pos.y - 15.0))?;
+        page.line_to((pos.x + 220.0, pos.y - 15.0))?;
+        page.stroke()?;
+        Ok(())
+    })?;
 
     Ok(())
 }
@@ -28,26 +31,16 @@ fn draw_line2<T: Into<Point>>(page: &PageDescriptionMode, pos: T, label: &str) -
         Ok(())
     })?;
     
-    page.move_to((pos.x + 30.0, pos.y - 25.0))?;
-    page.line_to((pos.x + 100.0, pos.y - 25.0))?;
-    page.stroke()?;
-
-    Ok(())
-}
-
-fn draw_rect<T: Into<Point>>(page: &PageDescriptionMode, pos: T, label: &str) -> anyhow::Result<()> {
-    let pos = pos.into();
-
-    page.run_text_mode(|page|{
-        page.move_text_pos((pos.x, pos.y -10.0))?;
-        page.show_text(label)?;
+    page.run_path_mode(|page|{
+        page.move_to((pos.x + 30.0, pos.y - 25.0))?;
+        page.line_to((pos.x + 100.0, pos.y - 25.0))?;
+        page.stroke()?;
         Ok(())
     })?;
 
-    page.rectangle(pos.x, pos.y - 40.0, 220.0, 25.0)?;
-
     Ok(())
 }
+
 fn main() -> anyhow::Result<()> {
     // http://libharu.sourceforge.net/demo/line_demo.c
     let doc = Document::new(|err| {
@@ -63,8 +56,11 @@ fn main() -> anyhow::Result<()> {
 
     /* print the lines of the page */
     page.set_line_width(1.0)?;
-    page.rectangle(50.0, 50.0, page.width()? - 100.0, page.height()? - 110.0)?;
-    page.stroke()?;
+    page.run_path_mode(|page|{
+        page.rectangle((50.0, 50.0), page.width()? - 100.0, page.height()? - 110.0)?;
+        page.stroke()?;
+        Ok(())
+    })?;
 
     /* print the title of the page (with positioning center) */
     let page_title = "Line Demo";
@@ -116,11 +112,13 @@ fn main() -> anyhow::Result<()> {
     page.set_rgb_stroke((0.0, 0.0, 0.5))?;
 
     page.set_line_join(LineJoin::Miter)?;
-    page.move_to((120.0, 300.0))?;
-    page.line_to((160.0, 340.0))?;
-    page.line_to((200.0, 300.0))?;
-    page.stroke()?;
-
+    page.run_path_mode(|page|{
+        page.move_to((120.0, 300.0))?;
+        page.line_to((160.0, 340.0))?;
+        page.line_to((200.0, 300.0))?;
+        page.stroke()?;    
+        Ok(())
+    })?;
     page.run_text_mode(|page|{
         page.move_text_pos((60.0, 360.0))?;
         page.show_text("PDF_MITER_JOIN")?;
@@ -128,10 +126,13 @@ fn main() -> anyhow::Result<()> {
     })?;
 
     page.set_line_join(LineJoin::Round)?;
-    page.move_to((120.0, 195.0))?;
-    page.line_to((160.0, 235.0))?;
-    page.line_to((200.0, 195.0))?;
-    page.stroke()?;
+    page.run_path_mode(|page|{
+        page.move_to((120.0, 195.0))?;
+        page.line_to((160.0, 235.0))?;
+        page.line_to((200.0, 195.0))?;
+        page.stroke()?;
+        Ok(())
+    })?;
 
     page.run_text_mode(|page|{
         page.move_text_pos((60.0, 255.0))?;
@@ -140,10 +141,13 @@ fn main() -> anyhow::Result<()> {
     })?;
 
     page.set_line_join(LineJoin::Bevel)?;
-    page.move_to((120.0, 90.0))?;
-    page.line_to((160.0, 130.0))?;
-    page.line_to((200.0, 90.0))?;
-    page.stroke()?;
+    page.run_path_mode(|page|{
+        page.move_to((120.0, 90.0))?;
+        page.line_to((160.0, 130.0))?;
+        page.line_to((200.0, 90.0))?;
+        page.stroke()?;
+        Ok(())
+    })?;
 
     page.run_text_mode(|page|{
         page.move_text_pos((60.0, 150.0))?;
@@ -156,20 +160,54 @@ fn main() -> anyhow::Result<()> {
     page.set_rgb_stroke((0.0, 0.0, 0.0))?;
     page.set_rgb_fill((0.75, 0.0, 0.0))?;
 
-    draw_rect(&page, (300.0, 770.0), "Stroke")?;
-    page.stroke()?;
 
-    draw_rect(&page, (300.0, 720.0), "Fill")?;
-    page.fill()?;
+    page.run_text_mode(|page|{
+        page.move_text_pos((300.0, 770.0 -10.0))?;
+        page.show_text("Stroke")?;
+        Ok(())
+    })?;
+    page.run_path_mode(|page|{
+        page.rectangle((300.0, 770.0 - 40.0), 220.0, 25.0)?;
+        page.stroke()?;
+        Ok(())
+    })?;
 
-    draw_rect(&page, (300.0, 670.0), "Fill then Stroke")?;
-    page.fill_stroke()?;
+    page.run_text_mode(|page|{
+        page.move_text_pos((300.0, 720.0 -10.0))?;
+        page.show_text("Fill")?;
+        Ok(())
+    })?;
+    page.run_path_mode(|page|{
+        page.rectangle((300.0, 720.0 - 40.0), 220.0, 25.0)?;
+        page.fill()?;
+        Ok(())
+    })?;
+
+    page.run_text_mode(|page|{
+        page.move_text_pos((300.0, 670.0 -10.0))?;
+        page.show_text("Fill then Stroke")?;
+        Ok(())
+    })?;
+    page.run_path_mode(|page|{
+        page.rectangle((300.0, 670.0 - 40.0), 220.0, 25.0)?;
+        page.fill_stroke()?;
+        Ok(())
+    })?;
     
     /* Clip Rect */
     page.gsave()?; /* Save the current graphic state */
-    draw_rect(&page, (300.0, 620.0), "Clip Rectangle")?;
-    page.clip()?;
-    page.stroke()?;
+    page.run_text_mode(|page|{
+        page.move_text_pos((300.0, 620.0 -10.0))?;
+        page.show_text("Clip Rectangle")?;
+        Ok(())
+    })?;
+    page.run_path_mode(|page|{
+        page.rectangle((300.0, 620.0 - 40.0), 220.0, 25.0)?;
+        page.clip()?;
+        page.stroke()?;
+        Ok(())
+    })?;
+
     page.set_font_and_size(&font, 13.0)?;
 
     page.run_text_mode(|page|{
@@ -214,17 +252,23 @@ fn main() -> anyhow::Result<()> {
     page.set_dash(&[3], 0)?;
 
     page.set_line_width(0.5)?;
-    page.move_to((x1, y1))?;
-    page.line_to((x2, y2))?;
-    page.stroke()?;
+    page.run_path_mode(|page|{
+        page.move_to((x1, y1))?;
+        page.line_to((x2, y2))?;
+        page.stroke()?;
+        Ok(())
+    })?;
 
     page.clear_dash()?;
 
     page.set_line_width(1.5)?;
 
-    page.move_to((x, y))?;
-    page.curve_to_2((x1, y1), (x2, y2))?;
-    page.stroke()?;
+    page.run_path_mode(|page|{
+        page.move_to((x, y))?;
+        page.curve_to_2((x1, y1), (x2, y2))?;
+        page.stroke()?;
+        Ok(())
+    })?;
 
     /* Curve Example(CurveTo3) */
     let y = y - 150.0;
@@ -250,16 +294,22 @@ fn main() -> anyhow::Result<()> {
     page.set_dash(&[3], 0)?;
 
     page.set_line_width(0.5)?;
-    page.move_to((x, y))?;
-    page.line_to((x1, y1))?;
-    page.stroke()?;
+    page.run_path_mode(|page|{
+        page.move_to((x, y))?;
+        page.line_to((x1, y1))?;
+        page.stroke()?;
+        Ok(())
+    })?;
 
     page.clear_dash()?;
     
     page.set_line_width(1.5)?;
-    page.move_to((x, y))?;
-    page.curve_to_3((x1, y1), (x2, y2))?;
-    page.stroke()?;
+    page.run_path_mode(|page|{
+        page.move_to((x, y))?;
+        page.curve_to_3((x1, y1), (x2, y2))?;
+        page.stroke()?;
+        Ok(())
+    })?;
 
     /* Curve Example(CurveTo) */
     let y = y - 150.0;
@@ -288,19 +338,25 @@ fn main() -> anyhow::Result<()> {
     page.set_dash(&[3], 1)?;
 
     page.set_line_width(0.5)?;
-    page.move_to((x, y))?;
-    page.line_to((x1, y1))?;
-    page.stroke()?;
-    page.move_to((x2, y2))?;
-    page.line_to((x3, y3))?;
-    page.stroke()?;
+    page.run_path_mode(|page|{
+        page.move_to((x, y))?;
+        page.line_to((x1, y1))?;
+        page.stroke()?;
+        page.move_to((x2, y2))?;
+        page.line_to((x3, y3))?;
+        page.stroke()?;
+        Ok(())
+    })?;
 
     page.clear_dash()?;
 
     page.set_line_width(1.5)?;
-    page.move_to((x, y))?;
-    page.curve_to((x1, y1), (x2, y2), (x3, y3))?;
-    page.stroke()?;
+    page.run_path_mode(|page|{
+        page.move_to((x, y))?;
+        page.curve_to((x1, y1), (x2, y2), (x3, y3))?;
+        page.stroke()?;
+        Ok(())
+    })?;
 
     /* save the document to a file */
     doc.save_to_file("line_demo.pdf")?;

@@ -95,27 +95,33 @@ fn main() -> anyhow::Result<()> {
 
         let mut x_pos = 20.0;
         for _ in 0..jptext.len()/2 {
-            page.move_to((x_pos, pos.y - 10.0))?;
-            page.line_to((x_pos, pos.y - 12.0))?;
-            page.stroke()?;
+            page.run_path_mode(|page|{
+                page.move_to((x_pos, pos.y - 10.0))?;
+                page.line_to((x_pos, pos.y - 12.0))?;
+                page.stroke()?;
+                Ok(())
+            })?;
             x_pos = x_pos + 30.0;
         }
 
         const PAGE_HEIGHT:libharu::Real = 210.0;
-        page.set_width(pos.x + 20.0)?;
-        page.set_height(PAGE_HEIGHT)?;
-
-        page.move_to((10.0, PAGE_HEIGHT - 25.0))?;
-        page.line_to((pos.x + 10.0, PAGE_HEIGHT - 25.0))?;
-        page.stroke()?;
-
-        page.move_to((10.0, PAGE_HEIGHT - 85.0))?;
-        page.line_to((pos.x + 10.0, PAGE_HEIGHT - 85.0))?;
-        page.stroke()?;
-
-        page.move_to((10.0, pos.y - 12.0))?;
-        page.line_to((pos.x + 10.0, pos.y - 12.0))?;
-        page.stroke()?;
+        page.run_path_mode(|page|{
+            page.set_width(pos.x + 20.0)?;
+            page.set_height(PAGE_HEIGHT)?;
+    
+            page.move_to((10.0, PAGE_HEIGHT - 25.0))?;
+            page.line_to((pos.x + 10.0, PAGE_HEIGHT - 25.0))?;
+            page.stroke()?;
+    
+            page.move_to((10.0, PAGE_HEIGHT - 85.0))?;
+            page.line_to((pos.x + 10.0, PAGE_HEIGHT - 85.0))?;
+            page.stroke()?;
+    
+            page.move_to((10.0, pos.y - 12.0))?;
+            page.line_to((pos.x + 10.0, pos.y - 12.0))?;
+            page.stroke()?;
+            Ok(())
+        })?;
     }
 
     doc.save_to_file("jpfont_demo.pdf")?;

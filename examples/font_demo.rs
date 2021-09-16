@@ -17,8 +17,11 @@ fn main() -> anyhow::Result<()> {
     
     /* Print the lines of the page. */
     page.set_line_width(1.0)?;
-    page.rectangle(50.0, 50.0, width - 100.0, height - 110.0)?;
-    page.stroke()?;
+    page.run_path_mode(|page|{
+        page.rectangle((50.0, 50.0), width - 100.0, height - 110.0)?;
+        page.stroke()?;
+        Ok(())
+    })?;
 
     /* Print the title of the page (with positioning center). */
     let def_font = doc.font("Helvetica", None)?;
