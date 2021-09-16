@@ -1,7 +1,4 @@
 use crate::prelude::*;
-//use crate::document::Document;
-use crate::destination::Destination;
-//use crate::{Rect, Real, Font, Color, CmykColor, Point, PageDescriptionMode, PageTextMode, PagePathMode, PageDescTextCommon, PageDescPathCommon};
 
 use std::ffi::CString;
 
@@ -186,19 +183,6 @@ impl<'a> Page<'a> {
         }
     }
 
-    /// Set line width of page.
-    pub fn set_line_width(&self, width: Real) -> anyhow::Result<()> {
-        let status = unsafe {
-            libharu_sys::HPDF_Page_SetLineWidth(self.handle(), width)
-        };
-
-        if status != 0 {
-            anyhow::bail!("HPDF_Page_SetLineWidth failed (status={})", status);
-        }
-
-        Ok(())
-    }
-
     /// Append a rectangle to the current path.
     pub fn rectangle(&self, x: Real, y: Real, width: Real, height: Real) -> anyhow::Result<()> {
         let status = unsafe {
@@ -312,32 +296,6 @@ impl<'a> Page<'a> {
         Ok(ret)
     }
 
-    /// Set font and size.
-    pub fn set_font_and_size(&self, font: &Font, size: Real) -> anyhow::Result<()> {
-        let status = unsafe {
-            libharu_sys::HPDF_Page_SetFontAndSize(self.handle(), font.font, size)
-        };
-
-        if status != 0 {
-            anyhow::bail!("HPDF_Page_SetFontAndSize failed (status={})", status);
-        }
-
-        Ok(())
-    }
-
-    /// Set text leading
-    pub fn set_text_leading(&self, val: Real) -> anyhow::Result<()> {
-        let status = unsafe {
-            libharu_sys::HPDF_Page_SetTextLeading(self.handle(), val)
-        };
-
-        if status != 0 {
-            anyhow::bail!("HPDF_Page_SetTextLeading failed (status={})", status);
-        }
-
-        Ok(())
-    }
-    
     /// Get the width of the text in current fontsize, character spacing and word spacing.
     pub fn text_width(&self, txt: &str) -> anyhow::Result<Real> {
         let txt = CString::new(txt)?;
@@ -424,19 +382,6 @@ impl<'a> Page<'a> {
         Ok(())
     }
 
-    /// Set the line dash pattern in the page.
-    pub fn set_dash(&self, dash_mode: &[u16], phase: usize) -> anyhow::Result<()> {
-        let status = unsafe {
-            libharu_sys::HPDF_Page_SetDash(self.handle(), dash_mode.as_ptr(), dash_mode.len() as u32, phase as u32)
-        };
-
-        if status != 0 {
-            anyhow::bail!("HPDF_Page_SetDash failed (status={})", status);
-        }
-
-        Ok(())
-    }
-
     /// Clear the line dash pattern in the page.
     pub fn clear_dash(&self) -> anyhow::Result<()> {
         let status = unsafe {
@@ -445,44 +390,6 @@ impl<'a> Page<'a> {
 
         if status != 0 {
             anyhow::bail!("HPDF_Page_SetDash failed (status={})", status);
-        }
-
-        Ok(())
-    }
-
-    /// Set the shape to be used at the ends of line.
-    pub fn set_line_cap(&self, line_cap: LineCap) -> anyhow::Result<()> {
-        let line_cap = match line_cap {
-            LineCap::Butt => libharu_sys::HPDF_LineCap::HPDF_BUTT_END,
-            LineCap::Round => libharu_sys::HPDF_LineCap::HPDF_ROUND_END,
-            LineCap::ProjectingSquare => libharu_sys::HPDF_LineCap::HPDF_PROJECTING_SCUARE_END,
-        };
-
-        let status = unsafe {
-            libharu_sys::HPDF_Page_SetLineCap(self.handle(), line_cap)
-        };
-
-        if status != 0 {
-            anyhow::bail!("HPDF_Page_SetLineCap failed (status={})", status);
-        }
-
-        Ok(())
-    }
-
-    /// Set the line join style in the page.
-    pub fn set_line_join(&self, line_join: LineJoin) -> anyhow::Result<()> {
-        let line_join = match line_join {
-            LineJoin::Miter => libharu_sys::HPDF_LineJoin::HPDF_MITER_JOIN,
-            LineJoin::Round => libharu_sys::HPDF_LineJoin::HPDF_ROUND_JOIN,
-            LineJoin::Bevel => libharu_sys::HPDF_LineJoin::HPDF_BEVEL_JOIN,
-        };
-
-        let status = unsafe {
-            libharu_sys::HPDF_Page_SetLineJoin(self.handle(), line_join)
-        };
-
-        if status != 0 {
-            anyhow::bail!("HPDF_Page_SetLineJoin failed (status={})", status);
         }
 
         Ok(())
@@ -559,67 +466,6 @@ impl<'a> Page<'a> {
         Ok(())
     }
 
-    /// Sets the text rendering mode.
-    pub fn set_text_rendering_mode(&self, mode: TextRenderingMode) -> anyhow::Result<()> {
-        let mode = match mode {
-            TextRenderingMode::Fill => libharu_sys::HPDF_TextRenderingMode::HPDF_FILL,
-            TextRenderingMode::Stroke => libharu_sys::HPDF_TextRenderingMode::HPDF_STROKE,
-            TextRenderingMode::FillThenStroke => libharu_sys::HPDF_TextRenderingMode::HPDF_FILL_THEN_STROKE,
-            TextRenderingMode::Invisible => libharu_sys::HPDF_TextRenderingMode::HPDF_INVISIBLE,
-            TextRenderingMode::FillClipping => libharu_sys::HPDF_TextRenderingMode::HPDF_FILL_CLIPPING,
-            TextRenderingMode::StrokeClipping => libharu_sys::HPDF_TextRenderingMode::HPDF_STROKE_CLIPPING,
-            TextRenderingMode::FillStrokeClipping => libharu_sys::HPDF_TextRenderingMode::HPDF_FILL_STROKE_CLIPPING,
-            TextRenderingMode::Clipping => libharu_sys::HPDF_TextRenderingMode::HPDF_CLIPPING,
-        };
-
-        let status = unsafe {
-            libharu_sys::HPDF_Page_SetTextRenderingMode(self.handle(), mode)
-        };
-
-        if status != 0 {
-            anyhow::bail!("HPDF_Page_SetTextRenderingMode failed (status={})", status);
-        }
-
-        Ok(())
-    }
-    
-    /// Set the character spacing for text showing.
-    pub fn set_char_space(&self, val: Real) -> anyhow::Result<()> {
-        let status = unsafe {
-            libharu_sys::HPDF_Page_SetCharSpace(self.handle(), val)
-        };
-
-        if status != 0 {
-            anyhow::bail!("HPDF_Page_SetCharSpace failed (status={})", status);
-        }
-
-        Ok(())
-    }
-
-    /// Set the word spacing for text showing.
-    pub fn set_word_space(&self, val: Real) -> anyhow::Result<()> {
-        let status = unsafe {
-            libharu_sys::HPDF_Page_SetWordSpace(self.handle(), val)
-        };
-
-        if status != 0 {
-            anyhow::bail!("HPDF_Page_SetWordSpace failed (status={})", status);
-        }
-
-        Ok(())
-    }
-
-    pub fn set_horizontal_scalling(&self, value: Real) -> anyhow::Result<()> {
-        let status = unsafe {
-            libharu_sys::HPDF_Page_SetHorizontalScalling(self.handle(), value)
-        };
-
-        if status != 0 {
-            anyhow::bail!("HPDF_Page_SetHorizontalScalling failed (status={})", status);
-        }
-
-        Ok(())
-    }
     /// Create a new destination object for the page.
     pub fn create_destination(&self) -> anyhow::Result<Destination> {
         let dst = unsafe {

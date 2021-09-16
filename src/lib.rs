@@ -9,40 +9,7 @@ mod encoder;
 mod error;
 mod context;
 pub mod prelude;
-/*
-pub use document::{
-    Document,
-    PageNumStyle,
-    CompressionMode,
-    PageMode,
-};
 
-pub use page::{
-    Page,
-    LineCap,
-    LineJoin,
-    TextRenderingMode,
-    PageSize,
-    PageDirection,
-    TextAlignment,
-};
-
-pub use outline::{
-    Outline,
-};
-
-pub use destination::{
-    Destination,
-};
-
-pub use context::{
-    PageTextMode,
-    PagePathMode,
-    PageDescriptionMode,
-    PageDescTextCommon,
-    PageDescPathCommon,
-};
-*/
 /// Floating-point type used in libharu.
 pub type Real = libharu_sys::HPDF_REAL;
 

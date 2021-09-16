@@ -6,44 +6,156 @@ use std::ffi::CString;
 pub trait PageDescTeextCommonFunction<'doc> : Deref<Target=Page<'doc>> {
     fn handle(&self) -> &Page;
     
+    /// Set line width of page.
     fn set_line_width(&self, width: Real) -> anyhow::Result<()> {
-        self.handle().set_line_width(width)
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetLineWidth(self.handle().handle(), width)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetLineWidth failed (status={})", status);
+        }
+
+        Ok(())
     }
 
+    /// Set the shape to be used at the ends of line.
     fn set_line_cap(&self, line_cap: LineCap) -> anyhow::Result<()> {
-        self.handle().set_line_cap(line_cap)
+        let line_cap = match line_cap {
+            LineCap::Butt => libharu_sys::HPDF_LineCap::HPDF_BUTT_END,
+            LineCap::Round => libharu_sys::HPDF_LineCap::HPDF_ROUND_END,
+            LineCap::ProjectingSquare => libharu_sys::HPDF_LineCap::HPDF_PROJECTING_SCUARE_END,
+        };
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetLineCap(self.handle().handle(), line_cap)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetLineCap failed (status={})", status);
+        }
+
+        Ok(())
     }
 
+    /// Set the line join style in the page.
     fn set_line_join(&self, line_join: LineJoin) -> anyhow::Result<()> {
-        self.handle().set_line_join(line_join)
+        let line_join = match line_join {
+            LineJoin::Miter => libharu_sys::HPDF_LineJoin::HPDF_MITER_JOIN,
+            LineJoin::Round => libharu_sys::HPDF_LineJoin::HPDF_ROUND_JOIN,
+            LineJoin::Bevel => libharu_sys::HPDF_LineJoin::HPDF_BEVEL_JOIN,
+        };
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetLineJoin(self.handle().handle(), line_join)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetLineJoin failed (status={})", status);
+        }
+
+        Ok(())
     }
 
+    /// Set the line dash pattern in the page.
     fn set_dash(&self, dash_mode: &[u16], phase: usize) -> anyhow::Result<()> {
-        self.handle().set_dash(dash_mode, phase)
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetDash(self.handle().handle(), dash_mode.as_ptr(), dash_mode.len() as u32, phase as u32)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetDash failed (status={})", status);
+        }
+
+        Ok(())
     }
 
+    /// Set the character spacing for text showing.
     fn set_char_space(&self, value: Real) -> anyhow::Result<()> {
-        self.handle().set_char_space(value)
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetCharSpace(self.handle().handle(), value)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetCharSpace failed (status={})", status);
+        }
+
+        Ok(())
     }
 
+    /// Set the word spacing for text showing.
     fn set_word_space(&self, value: Real) -> anyhow::Result<()> {
-        self.handle().set_word_space(value)
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetWordSpace(self.handle().handle(), value)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetWordSpace failed (status={})", status);
+        }
+
+        Ok(())
     }
 
     fn set_horizontal_scalling(&self, value: Real) -> anyhow::Result<()> {
-        self.handle().set_horizontal_scalling(value)
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetHorizontalScalling(self.handle().handle(), value)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetHorizontalScalling failed (status={})", status);
+        }
+
+        Ok(())
     }
 
+    /// Set text leading
     fn set_text_leading(&self, value: Real) -> anyhow::Result<()> {
-        self.handle().set_text_leading(value)
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetTextLeading(self.handle().handle(), value)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetTextLeading failed (status={})", status);
+        }
+
+        Ok(())
     }
 
+    /// Set font and size.
     fn set_font_and_size(&self, font: &Font, size: Real) -> anyhow::Result<()> {
-        self.handle().set_font_and_size(font, size)
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetFontAndSize(self.handle().handle(), font.font, size)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetFontAndSize failed (status={})", status);
+        }
+
+        Ok(())
     }
 
+    /// Sets the text rendering mode.
     fn set_text_rendering_mode(&self, mode: TextRenderingMode) -> anyhow::Result<()> {
-        self.handle().set_text_rendering_mode(mode)
+        let mode = match mode {
+            TextRenderingMode::Fill => libharu_sys::HPDF_TextRenderingMode::HPDF_FILL,
+            TextRenderingMode::Stroke => libharu_sys::HPDF_TextRenderingMode::HPDF_STROKE,
+            TextRenderingMode::FillThenStroke => libharu_sys::HPDF_TextRenderingMode::HPDF_FILL_THEN_STROKE,
+            TextRenderingMode::Invisible => libharu_sys::HPDF_TextRenderingMode::HPDF_INVISIBLE,
+            TextRenderingMode::FillClipping => libharu_sys::HPDF_TextRenderingMode::HPDF_FILL_CLIPPING,
+            TextRenderingMode::StrokeClipping => libharu_sys::HPDF_TextRenderingMode::HPDF_STROKE_CLIPPING,
+            TextRenderingMode::FillStrokeClipping => libharu_sys::HPDF_TextRenderingMode::HPDF_FILL_STROKE_CLIPPING,
+            TextRenderingMode::Clipping => libharu_sys::HPDF_TextRenderingMode::HPDF_CLIPPING,
+        };
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_SetTextRenderingMode(self.handle().handle(), mode)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_SetTextRenderingMode failed (status={})", status);
+        }
+
+        Ok(())
     }
 
     /// Print the text at the current position on the page.
@@ -276,11 +388,11 @@ impl<'doc, 'page> PageDescriptionMode<'doc, 'page> {
 
     pub fn run_text_mode<F>(&self, f: F) -> anyhow::Result<()>
     where
-        F: FnOnce(PageTextMode) -> anyhow::Result<()>
+        F: FnOnce(&PageTextMode) -> anyhow::Result<()>
     {
         self.begin_text()?;
         let page = PageTextMode::new(&self.page);
-        let ret = f(page);
+        let ret = f(&page);
         self.end_text()?;
 
         ret
@@ -288,7 +400,7 @@ impl<'doc, 'page> PageDescriptionMode<'doc, 'page> {
 
     pub fn run_path_mode<F>(&self, f: F) -> anyhow::Result<()>
     where
-        F: FnOnce(PagePathMode) -> anyhow::Result<()>
+        F: FnOnce(&PagePathMode) -> anyhow::Result<()>
     {
         // TODO: implement
         Ok(())
