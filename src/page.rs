@@ -329,6 +329,15 @@ impl<'a> Page<'a> {
         Ok(())
     }
     
+    /// Get the current value of the page's line spacing.
+    pub fn text_leading(&self) -> anyhow::Result<Real> {
+        let leading = unsafe {
+            libharu_sys::HPDF_Page_GetTextLeading(self.handle())
+        };
+
+        Ok(leading)
+
+    }
     /// Get the width of the text in current fontsize, character spacing and word spacing.
     pub fn text_width(&self, txt: &str) -> anyhow::Result<Real> {
         let txt = CString::new(txt)?;
