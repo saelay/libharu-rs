@@ -281,6 +281,16 @@ impl<'a> Page<'a> {
         Ok((ret as usize, real_width))
     }
 
+    /// Get the current value of the page's line spacing.
+    pub fn text_leading(&self) -> anyhow::Result<Real> {
+        let leading = unsafe {
+            libharu_sys::HPDF_Page_GetTextLeading(self.handle())
+        };
+
+        Ok(leading)
+
+    }
+    
     /// Get the current position for text showing.
     pub fn current_text_pos(&self) -> anyhow::Result<Point> {
         let point = unsafe {
