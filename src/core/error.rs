@@ -1,4 +1,3 @@
-/*
 use std::result;
 use std::error;
 use std::fmt;
@@ -115,6 +114,7 @@ pub enum Error {
     NameCannotGetNames,
     InvalidIccComponentNum,
     Other(libharu_sys::HPDF_STATUS), /* Other libharu error code */
+    CantCreatePdfDoc,
     NulError,
     TryFromIntError,
     Utf8Error,
@@ -232,6 +232,7 @@ impl Error {
             NameCannotGetNames => "NameCannotGetNames",
             InvalidIccComponentNum => "InvalidIccComponentNum",
             Other(_v) => "Other error",
+            CantCreatePdfDoc => "CantCreatePdfDoc",
             NulError => "NulError",
             TryFromIntError => "TryFromIntError",
             Utf8Error => "Utf8Error",
@@ -401,4 +402,3 @@ impl From<std::num::TryFromIntError> for Error {
         Self::TryFromIntError
     }
 }
-*/

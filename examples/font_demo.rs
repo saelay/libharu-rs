@@ -1,16 +1,14 @@
 extern crate libharu;
 extern crate anyhow;
 
-use libharu::prelude::*;//{Document};
+use libharu::prelude::*;
 
 fn main() -> anyhow::Result<()> {
     // http://libharu.sourceforge.net/demo/font_demo.c
-    let doc = Document::new(|err| {
-        println!("err={:?}", err);
-    }).unwrap();
+    let doc = Document::new()?;
 
     let page = doc.add_page()?;
-    let page = PageDescriptionMode::new(&page);
+    //let page = PageDescriptionMode::new(&page);
 
     let height = page.height()?;
     let width = page.width()?;
@@ -24,7 +22,7 @@ fn main() -> anyhow::Result<()> {
     })?;
 
     /* Print the title of the page (with positioning center). */
-    let def_font = doc.font("Helvetica", None)?;
+    let def_font = doc.find_font("Helvetica", None)?;
     page.set_font_and_size(&def_font, 24.0)?;
 
     let page_title = "Font Demo";
@@ -64,7 +62,7 @@ fn main() -> anyhow::Result<()> {
     
         for font_name in font_list {
             let samp_text = "abcdefgABCDEFG12345!#$%&+-@?";
-            let font = doc.font(font_name, None).unwrap();
+            let font = doc.find_font(font_name, None)?;
     
             /* print a label of text */
             page.set_font_and_size(&def_font, 9.0)?;

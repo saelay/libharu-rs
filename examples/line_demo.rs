@@ -1,7 +1,7 @@
 extern crate libharu;
 extern crate anyhow;
 
-use libharu::prelude::*;//{Point, Document, LineCap, LineJoin, PageDescriptionMode, PageDescTextCommon};
+use libharu::prelude::*;
 
 fn draw_line<T: Into<Point>>(page: &PageDescriptionMode, pos: T, label: &str) -> anyhow::Result<()> {
     let pos = pos.into();
@@ -43,9 +43,7 @@ fn draw_line2<T: Into<Point>>(page: &PageDescriptionMode, pos: T, label: &str) -
 
 fn main() -> anyhow::Result<()> {
     // http://libharu.sourceforge.net/demo/line_demo.c
-    let doc = Document::new(|err| {
-        println!("err={:?}", err);
-    })?;
+    let doc = Document::new()?;
 
     /* create default-font */
     let font = doc.font("Helvetica", None)?;
