@@ -2,7 +2,9 @@
 
 use crate::error::Error;
 use crate::page::Page;
+use crate::outline::Outline;
 use crate::Font;
+use crate::encoder::Encoder;
 
 use bitflags::bitflags;
 
@@ -10,6 +12,7 @@ use std::ffi::CString;
 use std::convert::TryInto;
 
 /// Page label style.
+#[derive(Debug)]
 pub enum PageNumStyle {
     /// Page label is displayed by Arabic numerals.
     Decimal,
@@ -47,6 +50,38 @@ bitflags! {
     }
 }
 
+/// Page display style.
+#[derive(Debug)]
+pub enum PageMode {
+    /// Display the document with neither outline nor thumbnail.
+    None,
+
+    /// Display the document with outline pain.
+    Outline,
+
+    /// Display the document with thumbnail pain.
+    Thumbs,
+    
+    /// Display the document with full screen mode.
+    FullScreen,
+}
+
+
+/// Page layout style.
+#[derive(Debug)]
+pub enum PageLayout {
+    /// Only one page is displayed.
+    Single,
+    
+    /// Display the pages in one column.
+    OneColumn,
+    
+    /// Display the pages in two column. The page of the odd number is displayed left.
+    TwoColumnLeft,
+    
+    /// Display the pages in two column. The page of the odd number is displayed right.
+    TwoColumnRight,
+}
 // onerrorのクロージャをBoxで持ちたいためInnerを別にしている。
 // TODO: onerrorは必要か？
 struct DocumentInner {
@@ -86,6 +121,7 @@ impl Document {
         Ok(Self { doc, inner })
     }
 
+    #[inline]
     pub(crate) fn handle(&self) -> libharu_sys::HPDF_Doc {
         self.doc
     }
@@ -101,6 +137,45 @@ impl Document {
         }
 
         Ok(Page::new(self, page))
+    }
+
+    /// Set how the document should be displayed.
+    pub fn set_page_mode(&self, mode: PageMode) -> anyhow::Result<()> {
+        let mode = match mode {
+            PageMode::None => libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_USE_NONE,
+            PageMode::Outline => libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_USE_OUTLINE,
+            PageMode::Thumbs => libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_USE_THUMBS,
+            PageMode::FullScreen => libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_FULL_SCREEN,
+        };
+
+        let status = unsafe {
+            libharu_sys::HPDF_SetPageMode(self.handle(), mode)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_SetPageMode failed (status={})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Get how the document should be displayed.
+    pub fn page_mode(&self) -> anyhow::Result<PageMode> {
+        let mode = unsafe {
+            libharu_sys::HPDF_GetPageMode(self.handle())
+        };
+
+        let mode = match mode {
+            libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_USE_NONE => PageMode::None,
+            libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_USE_OUTLINE => PageMode::Outline,
+            libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_USE_THUMBS => PageMode::Thumbs,
+            libharu_sys::HPDF_PageMode::HPDF_PAGE_MODE_FULL_SCREEN => PageMode::FullScreen,
+            _ => {
+                anyhow::bail!("HPDF_GetPageMode failed");
+            }
+        };
+
+        Ok(mode)
     }
 
     /// Create a new page and inserts it just before the specified page.
@@ -125,10 +200,10 @@ impl Document {
         };
 
         let font = unsafe {
-            libharu_sys::HPDF_GetFont(self.doc,
+            libharu_sys::HPDF_GetFont(self.handle(),
                 std::mem::transmute(font_name.as_ptr()),
                 match encoding_name {
-                    Some(s) => std::mem::transmute(s.as_ptr()),
+                    Some(ref s) => std::mem::transmute(s.as_ptr()),
                     None => std::ptr::null_mut(),
                 })
         };
@@ -158,7 +233,7 @@ impl Document {
             None => CString::new("")?,
         };
         let status = unsafe {
-            libharu_sys::HPDF_AddPageLabel(self.doc, page_num, style, first_page, std::mem::transmute(prefix.as_ptr()))
+            libharu_sys::HPDF_AddPageLabel(self.handle(), page_num, style, first_page, std::mem::transmute(prefix.as_ptr()))
         };
 
         if status != 0 {
@@ -169,26 +244,26 @@ impl Document {
     }
 
     /// Enable Japanese fonts. After the method invoked, an application can use the following Japanese fonts.
-    /// * MS-Mincyo
-    /// * MS-Mincyo,Bold
-    /// * MS-Mincyo,Bold
-    /// * MS-Mincyo,Italic
-    /// * MS-Mincyo,BoldItalic
+    /// * MS-mincho
+    /// * MS-mincho,Bold
+    /// * MS-mincho,Bold
+    /// * MS-mincho,Italic
+    /// * MS-mincho,BoldItalic
     /// * MS-Gothic
     /// * MS-Gothic,Bold
     /// * MS-Gothic,Italic
     /// * MS-Gothic,BoldItalic
-    /// * MS-PMincyo
-    /// * MS-PMincyo,Bold
-    /// * MS-PMincyo,Italic
-    /// * MS-PMincyo,BoldItalic
+    /// * MS-Pmincho
+    /// * MS-Pmincho,Bold
+    /// * MS-Pmincho,Italic
+    /// * MS-Pmincho,BoldItalic
     /// * MS-PGothic
     /// * MS-PGothic,Bold
     /// * MS-PGothic,Italic
     /// * MS-PGothic,BoldItalic
     pub fn use_jpfonts(&self) -> anyhow::Result<()> {
         let status = unsafe {
-            libharu_sys::HPDF_UseJPFonts(self.doc)
+            libharu_sys::HPDF_UseJPFonts(self.handle())
         };
 
         if status != 0 {
@@ -217,7 +292,7 @@ impl Document {
     /// * Batang,BoldItalic
     pub fn use_krfonts(&self) -> anyhow::Result<()> {
         let status = unsafe {
-            libharu_sys::HPDF_UseKRFonts(self.doc)
+            libharu_sys::HPDF_UseKRFonts(self.handle())
         };
 
         if status != 0 {
@@ -238,7 +313,7 @@ impl Document {
     /// * SimHei,BoldItalic
     pub fn use_cnsfonts(&self) -> anyhow::Result<()> {
         let status = unsafe {
-            libharu_sys::HPDF_UseCNSFonts(self.doc)
+            libharu_sys::HPDF_UseCNSFonts(self.handle())
         };
 
         if status != 0 {
@@ -255,7 +330,7 @@ impl Document {
     /// * MingLiU,BoldItalic
     pub fn use_cntfonts(&self) -> anyhow::Result<()> {
         let status = unsafe {
-            libharu_sys::HPDF_UseCNTFonts(self.doc)
+            libharu_sys::HPDF_UseCNTFonts(self.handle())
         };
 
         if status != 0 {
@@ -264,27 +339,238 @@ impl Document {
 
         Ok(())
     }
+    
+    /// Enable Japanese encodings. After the method invoked, an application can use the following Japanese encodings.
+    /// * 90ms-RKSJ-H
+    /// * 90ms-RKSJ-V
+    /// * 90msp-RKSJ-H
+    /// * EUC-H
+    /// * EUC-V
+    pub fn use_jpencodings(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_UseJPEncodings(self.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_UseJPEncodings failed (status = {})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Enable Korean encodings. After the method is invoked, an application can use the following Korean encodings.
+    /// * KSC-EUC-H
+    /// * KSC-EUC-V
+    /// * KSCms-UHC-H
+    /// * KSCms-UHC-HW-H
+    /// * KSCms-UHC-HW-V
+    pub fn use_krencodings(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_UseKREncodings(self.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_UseKREncodings failed (status = {})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Enable simplified Chinese encodings. After the method is invoked, an application can use the following simplified Chinese encodings.
+    /// * GB-EUC-H
+    /// * GB-EUC-V
+    /// * GBK-EUC-H
+    /// * GBK-EUC-V
+    pub fn use_cnsencodings(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_UseCNSEncodings(self.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_UseCNSEncodings failed (status = {})", status);
+        }
+
+        Ok(())
+    }
+
+    /// Enable traditional Chinese encodings. After the method is invoked, an application can use the following traditional Chinese encodings.
+    /// * GB-EUC-H
+    /// * GB-EUC-V
+    /// * GBK-EUC-H
+    /// * GBK-EUC-V
+    pub fn use_cntencodings(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_UseCNTEncodings(self.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_UseCNTEncodings failed (status = {})", status);
+        }
+
+        Ok(())
+    }
 
     /// Save the current document to a file.
-    pub fn save_to_file(&self, name: &str) {
+    pub fn save_to_file(&self, name: &str) -> anyhow::Result<()> {
         let name = CString::new(name).unwrap();
-        unsafe {
-            libharu_sys::HPDF_SaveToFile(self.doc, name.as_bytes().as_ptr() as *const i8);
+        let status = unsafe {
+            libharu_sys::HPDF_SaveToFile(self.handle(), std::mem::transmute(name.as_bytes().as_ptr()))
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_SaveToFile failed (status = {})", status);
         }
+
+        Ok(())
     }
 
     /// Set the mode of compression.
-    pub fn set_compression_mode(&self, mode: CompressionMode) {
-        unsafe {
-            libharu_sys::HPDF_SetCompressionMode(self.doc, mode.bits());
+    pub fn set_compression_mode(&self, mode: CompressionMode) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_SetCompressionMode(self.handle(), mode.bits())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_SetCompressionMode failed (status = {})", status);
         }
+
+        Ok(())
+    }
+
+    /// creates root outline object.
+    pub fn create_outline(&self, title: &str, parent: Option<&Outline>, enc: Option<&Encoder>) -> anyhow::Result<Outline> {
+        let title = CString::new(title)?;
+        
+        let outline = unsafe {
+            libharu_sys::HPDF_CreateOutline(
+                self.handle(),
+                match parent {
+                    Some(p) => p.handle(),
+                    None => std::ptr::null_mut(),
+                },
+                title.as_ptr() as *const i8,
+                match enc {
+                    Some(e) => e.handle(),
+                    None => std::ptr::null_mut(),
+                }
+            )
+        };
+
+        if outline == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_CreateOutline failed");
+        }
+
+        Ok(Outline::new(self, outline))
+    }
+
+    /// creates root outline object. (raw bytes)
+    pub fn create_outline_bytes(&self, title: &[u8], parent: Option<&Outline>, enc: Option<&Encoder>) -> anyhow::Result<Outline> {
+        let title = CString::new(title)?;
+        
+        let outline = unsafe {
+            libharu_sys::HPDF_CreateOutline(
+                self.handle(),
+                match parent {
+                    Some(p) => p.handle(),
+                    None => std::ptr::null_mut(),
+                },
+                title.as_ptr() as *const i8,
+                match enc {
+                    Some(e) => e.handle(),
+                    None => std::ptr::null_mut(),
+                }
+            )
+        };
+
+        if outline == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_CreateOutline failed");
+        }
+
+        Ok(Outline::new(self, outline))
+    }
+
+    /// Get the handle of a corresponding encoder object by specified encoding name.
+    pub fn find_encoder(&self, encoding_name: &str) -> anyhow::Result<Encoder> {
+        let encoding_name = CString::new(encoding_name)?;
+        let enc = unsafe {
+            libharu_sys::HPDF_GetEncoder(self.handle(), encoding_name.as_ptr())
+        };
+
+        if enc == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_GetEncoder failed");
+        }
+
+        Ok(Encoder::new(self, enc))
+    }
+
+    /// Get the handle of the current encoder of the document object.
+    pub fn current_encoder(&self) -> anyhow::Result<Encoder> {
+        let enc = unsafe {
+            libharu_sys::HPDF_GetCurrentEncoder(self.handle())
+        };
+
+        if enc == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_GetCurrentEncoder failed");
+        }
+
+        Ok(Encoder::new(self, enc))
+    }
+
+    /// Set the handle of the current encoder of the document object.
+    pub fn set_current_encoder(&self, encoding_name: &str) -> anyhow::Result<()> {
+        let encoding_name = CString::new(encoding_name)?;
+        let status = unsafe {
+            libharu_sys::HPDF_SetCurrentEncoder(self.handle(), encoding_name.as_ptr())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_SetCurrentEncoder failed (status={})", status);
+        }
+
+        Ok(())
+    }
+    
+    /// Get the current setting for page layout.
+    pub fn page_layout(&self) -> anyhow::Result<PageLayout> {
+        let layout = unsafe {
+            libharu_sys::HPDF_GetPageLayout(self.handle())
+        };
+
+        Ok(match layout {
+            libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_SINGLE => PageLayout::Single,
+            libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_ONE_COLUMN => PageLayout::OneColumn,
+            libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_TWO_COLUMN_LEFT => PageLayout::TwoColumnLeft,
+            libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_TWO_COLUMN_RIGHT  => PageLayout::TwoColumnRight,
+            _ => anyhow::bail!("HPDF_GetPageLayout failed"),
+        })
+    }
+
+    /// Set how the page should be displayed. If this attribute is not set, the setting of a viewer application is used.
+    pub fn set_page_layout(&self, layout: PageLayout) -> anyhow::Result<()> {
+        let layout = match layout {
+            PageLayout::Single => libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_SINGLE,
+            PageLayout::OneColumn => libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_ONE_COLUMN,
+            PageLayout::TwoColumnLeft => libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_TWO_COLUMN_LEFT,
+            PageLayout::TwoColumnRight  => libharu_sys::HPDF_PageLayout::HPDF_PAGE_LAYOUT_TWO_COLUMN_RIGHT,
+        };
+
+        let status = unsafe {
+            libharu_sys::HPDF_SetPageLayout(self.handle(), layout)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_SetPageLayout failed (status={})", status);
+        }
+
+        Ok(())
+
     }
 }
 
 impl Drop for Document {
     fn drop(&mut self) {
         unsafe {
-            libharu_sys::HPDF_Free(self.doc);
+            libharu_sys::HPDF_Free(self.handle());
         }
     }
 }
