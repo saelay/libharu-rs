@@ -100,10 +100,6 @@ pub struct Document {
     inner: Box<DocumentInner>,
 }
 
-extern "C" {
-    fn HPDF_UseUTFEncodings(doc: libharu_sys::HPDF_Doc) -> libharu_sys::HPDF_STATUS;
-}
-
 impl Document {
     /// Create a new instance of document.
     pub fn new(onerror: impl Fn(Error) + 'static) -> anyhow::Result<Self>
@@ -414,6 +410,7 @@ impl Document {
         Ok(())
     }
 
+    /// Enable UTF-8 encoding.
     pub fn use_utfencodings(&self) -> anyhow::Result<()> {
         let status = unsafe {
             libharu_sys::HPDF_UseUTFEncodings(self.handle())
