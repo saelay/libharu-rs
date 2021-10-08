@@ -581,6 +581,7 @@ impl Document {
         Ok(())
     }
 
+    /// load a TrueType font from an external file and register it to a document object.
     pub fn load_ttf_font(&self, name: &str, embedding: bool) -> anyhow::Result<&str> {
         let name = CString::new(name)?;
         let ret = unsafe {
