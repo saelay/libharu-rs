@@ -1,12 +1,22 @@
 [package]
 name = "libharu"
-version = "0.1.1"
+version = "0.1.2"
+authors = ["saelay <saelay@outlook.jp>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Rust binding for libharu(http://libharu.org/) PDF library."
+repository = ""
+license = "MIT"
+readme = "README.md"
+
+categories = ["rendering"]
+keywords = ["pdf", "libharu", "haru"]
+
 
 [dependencies]
-libharu-sys = "*"
-anyhow = "*"
-bitflags = "*"
-encoding_rs = "*"
+libharu-sys = "0.0.1"
+anyhow = "1.0.44"
+bitflags = "1.3.2"
+
+[dev-dependencies]
+encoding_rs = "0.8.28"
