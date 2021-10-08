@@ -251,6 +251,7 @@ impl<'a> Page<'a> {
 
     /// Calculate the byte length which can be included within the specified width.
     pub fn measure_text(&self, text: &str, width: Real, wordwrap: bool) -> anyhow::Result<(usize, Real)> {
+        let orig_text = text.clone();
         let text = CString::new(text)?;
         let wordwrap = match wordwrap {
             true => 1,
@@ -260,6 +261,23 @@ impl<'a> Page<'a> {
         let mut real_width = 0.0;
         let ret = unsafe {
             libharu_sys::HPDF_Page_MeasureText(self.handle(), text.as_ptr() as *const i8, width, wordwrap, &mut real_width)
+        };
+
+        /* calc UTF8 boundary */
+        let ret = ret as usize;
+        let ret = if !orig_text.is_char_boundary(ret) {
+            let mut new_ret = 0;
+            for i in 1..ret {
+                if orig_text.is_char_boundary(ret-i) {
+                    new_ret = ret - i;
+                    break;
+                }
+            }
+
+            new_ret
+        }
+        else {
+            ret
         };
 
         Ok((ret as usize, real_width))

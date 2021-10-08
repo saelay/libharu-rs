@@ -410,6 +410,19 @@ impl Document {
         Ok(())
     }
 
+    /// Enable UTF-8 encoding.
+    pub fn use_utfencodings(&self) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_UseUTFEncodings(self.handle())
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_UseCNTEncodings failed (status = {})", status);
+        }
+
+        Ok(())
+    }
+
     /// Save the current document to a file.
     pub fn save_to_file(&self, name: &str) -> anyhow::Result<()> {
         let name = CString::new(name).unwrap();
@@ -563,7 +576,23 @@ impl Document {
         }
 
         Ok(())
+    }
 
+    /// load a TrueType font from an external file and register it to a document object.
+    pub fn load_ttf_font(&self, name: &str, embedding: bool) -> anyhow::Result<&str> {
+        let name = CString::new(name)?;
+        let ret = unsafe {
+            libharu_sys::HPDF_LoadTTFontFromFile(self.handle(), name.as_ptr(), if embedding { 1 } else { 0 } )
+        };
+
+        if ret == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_LoadTTFontFromFile failed");
+        }
+        
+        let s = unsafe { std::ffi::CStr::from_ptr(ret).to_str()? };
+
+        //let ret = unsafe { CString::from_raw(ret as *mut i8).into_string()? };
+        Ok(s)
     }
 }
 
