@@ -1,11 +1,11 @@
 [package]
 name = "libharu"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["saelay <saelay@outlook.jp>"]
 edition = "2018"
 
 description = "Rust binding for libharu(http://libharu.org/) PDF library."
-repository = "https://github.com/saelay/libharu"
+repository = "https://github.com/saelay/libharu-rs"
 license = "MIT"
 readme = "README.md"
 
