@@ -225,9 +225,9 @@ Rust binding for libharu(http://libharu.org/) PDF library.
 
 | C API                              | Rust API |
 |------------------------------------|-|
-| HPDF_Image_GetSize                 | Image::width |
-| HPDF_Image_GetWidth                | Image::height |
-| HPDF_Image_GetHeight               | |
+| HPDF_Image_GetSize                 | |
+| HPDF_Image_GetWidth                | Image::width |
+| HPDF_Image_GetHeight               | Image::height |
 | HPDF_Image_GetBitsPerComponent     | |
 | HPDF_Image_GetColorSpace           | |
 | HPDF_Image_SetColorMask            | |
