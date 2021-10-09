@@ -24,6 +24,10 @@ pub use crate::destination::{
     Destination,
 };
 
+pub use crate::image::{
+    Image,
+};
+
 pub use crate::context::{
     PageTextMode,
     PagePathMode,

@@ -1,6 +1,6 @@
 [package]
 name = "libharu"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["saelay <saelay@outlook.jp>"]
 edition = "2018"
 
