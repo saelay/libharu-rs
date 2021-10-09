@@ -5,6 +5,8 @@ use crate::page::Page;
 use crate::outline::Outline;
 use crate::Font;
 use crate::encoder::Encoder;
+use crate::destination::Destination;
+use crate::image::Image;
 
 use bitflags::bitflags;
 
@@ -134,6 +136,19 @@ impl Document {
 
         if page == std::ptr::null_mut() {
             anyhow::bail!("HPDF_AddPage failed");
+        }
+
+        Ok(Page::new(self, page))
+    }
+
+    /// Return the current page object.
+    pub fn current_page(&self) -> anyhow::Result<Page> {
+        let page = unsafe {
+            libharu_sys::HPDF_GetCurrentPage(self.handle())
+        };
+
+        if page == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_GetCurrentPage failed");
         }
 
         Ok(Page::new(self, page))
@@ -593,6 +608,34 @@ impl Document {
 
         //let ret = unsafe { CString::from_raw(ret as *mut i8).into_string()? };
         Ok(s)
+    }
+
+    /// Load an external png image file.
+    pub fn load_png_image(&self, name: &str) -> anyhow::Result<Image> {
+        let name = CString::new(name)?;
+
+        let image = unsafe {
+            libharu_sys::HPDF_LoadPngImageFromFile(self.handle(), name.as_ptr())
+        };
+
+        if image == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_LoadPngImageFromFile failed");
+        }
+
+        Ok(Image::new(self, image))
+    }
+
+    /// Set the first page appears when a document is opened.
+    pub fn set_open_action(&self, dst: &Destination) -> anyhow::Result<()> {
+        let status = unsafe {
+            libharu_sys::HPDF_SetOpenAction(self.handle(), dst.handle())
+        };
+        
+        if status != 0 {
+            anyhow::bail!("HPDF_SetOpenAction failed (status={})", status);
+        }
+
+        Ok(())
     }
 }
 

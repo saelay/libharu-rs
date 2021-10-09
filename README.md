@@ -29,8 +29,8 @@ Rust binding for libharu(http://libharu.org/) PDF library.
 | HPDF_GetPageLayout          | Document::page_layout |
 | HPDF_SetPageMode            | Document::set_page_mode |
 | HPDF_GetPageMode            | Document::page_mode |
-| HPDF_SetOpenAction          | |
-| HPDF_GetCurrentPage         | |
+| HPDF_SetOpenAction          | Document::set_open_action |
+| HPDF_GetCurrentPage         | Document::current_page |
 | HPDF_AddPage                | Document::add_page |
 | HPDF_InsertPage             | Document::insert_page |
 | HPDF_GetFont                | Document::font |
@@ -50,7 +50,7 @@ Rust binding for libharu(http://libharu.org/) PDF library.
 | HPDF_UseKREncodings         | Document::use_krencodings |
 | HPDF_UseCNSEncodings        | Document::use_cnsencodings |
 | HPDF_UseCNTEncodings        | Document::use_cntencodings |
-| HPDF_LoadPngImageFromFile   | |
+| HPDF_LoadPngImageFromFile   | Document::load_png_image |
 | HPDF_LoadPngImageFromFile2  | |
 | HPDF_LoadRawImageFromFile   | |
 | HPDF_LoadRawImageFromFile2  | |
@@ -164,7 +164,7 @@ Rust binding for libharu(http://libharu.org/) PDF library.
 | HPDF_Page_SetCMYKFill              | |
 | HPDF_Page_SetCMYKStroke            | |
 | HPDF_Page_ExecuteXObject           | |
-| HPDF_Page_DrawImage                | |
+| HPDF_Page_DrawImage                | Page::draw_image |
 | HPDF_Page_Circle                   | |
 | HPDF_Page_Arc                      | |
 | HPDF_Page_TextOut                  | Page::text_out / Page::text_out_bytes |
@@ -212,7 +212,7 @@ Rust binding for libharu(http://libharu.org/) PDF library.
 
 | C API                              | Rust API |
 |------------------------------------|-|
-| HPDF_Destination_SetXYZ            | |
+| HPDF_Destination_SetXYZ            | Destination::set_syz |
 | HPDF_Destination_SetFit            | |
 | HPDF_Destination_SetFitH           | |
 | HPDF_Destination_SetFitV           | |
@@ -225,8 +225,8 @@ Rust binding for libharu(http://libharu.org/) PDF library.
 
 | C API                              | Rust API |
 |------------------------------------|-|
-| HPDF_Image_GetSize                 | |
-| HPDF_Image_GetWidth                | |
+| HPDF_Image_GetSize                 | Image::width |
+| HPDF_Image_GetWidth                | Image::height |
 | HPDF_Image_GetHeight               | |
 | HPDF_Image_GetBitsPerComponent     | |
 | HPDF_Image_GetColorSpace           | |

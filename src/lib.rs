@@ -8,6 +8,8 @@ mod destination;
 mod encoder;
 mod error;
 mod context;
+mod image;
+
 /// prelude
 pub mod prelude;
 

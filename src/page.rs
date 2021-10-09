@@ -408,4 +408,27 @@ impl<'a> Page<'a> {
 
         Ok(())
     }
+
+    /// Show an image in one operation.
+    pub fn draw_image<T>(&self, img: &Image, pos: T, width: Real, height: Real) -> anyhow::Result<()>
+    where
+        T: Into<Point>
+    {
+        let pos = pos.into();
+
+        let status = unsafe {
+            libharu_sys::HPDF_Page_DrawImage(
+                self.handle(),
+                img.handle(),
+                pos.x,
+                pos.y,
+                width, height)
+        };
+
+        if status != 0 {
+            anyhow::bail!("HPDF_Page_DrawImage failed (status={})", status);
+        }
+
+        Ok(())
+    }
 }
