@@ -610,6 +610,25 @@ impl Document {
         Ok(s)
     }
 
+    /// Load a TrueType font from an TrueType collection file and register it to a document object.
+    pub fn load_ttf_font_from_ttc(&self, name: &str, index: usize, embedding: bool) -> anyhow::Result<&str> {
+        let name = CString::new(name)?;
+        let index = index as u32;
+        
+        let ret = unsafe {
+            libharu_sys::HPDF_LoadTTFontFromFile2(self.handle(), name.as_ptr(), index, if embedding { 1 } else { 0 } )
+        };
+
+        if ret == std::ptr::null_mut() {
+            anyhow::bail!("HPDF_LoadTTFontFromFile failed");
+        }
+        
+        let s = unsafe { std::ffi::CStr::from_ptr(ret).to_str()? };
+
+        //let ret = unsafe { CString::from_raw(ret as *mut i8).into_string()? };
+        Ok(s)
+    }
+
     /// Load an external png image file.
     pub fn load_png_image(&self, name: &str) -> anyhow::Result<Image> {
         let name = CString::new(name)?;
