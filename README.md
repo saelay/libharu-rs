@@ -36,7 +36,7 @@ Rust binding for libharu(http://libharu.org/) PDF library.
 | HPDF_GetFont                | Document::font |
 | HPDF_LoadType1FontFromFile  | |
 | HPDF_LoadTTFontFromFile     | Document::load_ttf_font |
-| HPDF_LoadTTFontFromFile2    | |
+| HPDF_LoadTTFontFromFile2    | Document::load_ttf_font_from_ttc |
 | HPDF_AddPageLabel           | Document::add_page_label |
 | HPDF_UseJPFonts             | Document::use_jpfonts |
 | HPDF_UseKRFonts             | Document::use_krfonts |
